@@ -16,7 +16,7 @@ The plugin uses two separate databases:
 
 - **`knowledge.db`** (public) — Contains documentation, API reference, demo code, and gem READMEs from the MusaDSL ecosystem. This database is pre-built, automatically downloaded from GitHub Releases on session start, and periodically updated. You don't need to do anything to maintain it.
 
-- **`private.db`** (local, optional) — Contains your own indexed compositions. This database is never touched by automatic updates, so your private works are always safe. You create it by indexing your own composition projects (see [Indexing Private Works](#indexing-private-works) below).
+- **`private.db`** (local, optional) — Contains your own indexed compositions. Stored at `~/.config/musa-claude-plugin/private.db`, outside the plugin directory, so it persists across plugin updates. This database is never touched by automatic updates — your private works are always safe. You create it by indexing your own composition projects (see [Indexing Private Works](#indexing-private-works) below).
 
 When you search, the plugin queries both databases and merges results by relevance (cosine distance). If `private.db` doesn't exist, searches work normally using only the public knowledge base.
 
@@ -131,8 +131,7 @@ musa-claude-plugin/
 │   ├── embeddings.rb        # Voyage AI integration
 │   ├── db.rb                # sqlite-vec database management
 │   ├── ensure_db.rb         # Auto-download knowledge.db from releases
-│   ├── knowledge.db         # Public knowledge base (auto-downloaded)
-│   └── private.db           # Private works (local, user-created, never auto-updated)
+│   └── knowledge.db         # Public knowledge base (auto-downloaded)
 ├── hooks/                   # Session lifecycle hooks (auto-download on start)
 ├── .mcp.json                # MCP server configuration
 ├── Gemfile                  # Ruby dependencies

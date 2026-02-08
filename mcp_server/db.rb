@@ -28,11 +28,13 @@ module MusaKnowledgeBase
       File.join(__dir__, "knowledge.db")
     end
 
+    STABLE_PRIVATE_DB_DIR = File.join(Dir.home, ".config", "musa-claude-plugin")
+
     def default_private_db_path
       env_path = ENV["PRIVATE_DB_PATH"]
       return env_path if env_path
 
-      File.join(__dir__, "private.db")
+      File.join(STABLE_PRIVATE_DB_DIR, "private.db")
     end
 
     def open(path = nil)

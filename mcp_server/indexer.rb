@@ -187,6 +187,7 @@ module MusaKnowledgeBase
       end
 
       puts "Indexing #{chunks.length} chunks from: #{File.basename(work_path)}"
+      FileUtils.mkdir_p(File.dirname(db_path))
       db = DB.open(db_path)
       begin
         DB.create_schema(db)
@@ -364,11 +365,13 @@ module MusaKnowledgeBase
 
       parser.parse!
 
+      require_relative "db"
+
       script_dir = __dir__
       plugin_root = File.dirname(script_dir)
       chunks_dir = options[:chunks_dir] || File.join(plugin_root, "data", "chunks")
       db_path = options[:db_path] || File.join(script_dir, "knowledge.db")
-      private_db_path = options[:db_path] || File.join(script_dir, "private.db")
+      private_db_path = options[:db_path] || DB.default_private_db_path
 
       case options[:command]
       when :chunks_only

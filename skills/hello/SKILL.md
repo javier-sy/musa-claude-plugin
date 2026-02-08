@@ -29,7 +29,7 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
 
    - **`knowledge.db`** (public) — Contains the official MusaDSL documentation, API reference, 23 demo projects, and supporting gem docs. Automatically downloaded from GitHub Releases and periodically updated. The user doesn't need to maintain it.
 
-   - **`private.db`** (local, optional) — A separate database for the user's own composition projects. Never touched by automatic updates — private content is always safe.
+   - **`private.db`** (local, optional) — A separate database for the user's own composition projects, stored at `~/.config/musa-claude-plugin/private.db`. This location persists across plugin updates — private content is always safe.
 
    - Use `/musa-claude-plugin:index` to add your compositions to the private database.
 
