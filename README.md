@@ -30,6 +30,11 @@ When you search, the plugin queries both databases and merges results by relevan
 | `dependencies` | Dependency chain for a concept (what setup is needed) |
 | `pattern` | Code pattern for a specific technique |
 | `check_setup` | Check plugin status: API key, knowledge base, private works DB |
+| `list_works` | List all indexed private works with chunk counts |
+| `add_work` | Index a private composition work from a given path |
+| `scan_works` | Scan a directory and index all composition works found |
+| `remove_work` | Remove a private work from the index by name |
+| `index_status` | Show status of both knowledge databases (public and private) |
 
 ### Skills
 
@@ -74,7 +79,7 @@ Use `/index` to manage your private works — add, update, remove, and list inde
 
 The indexer looks for `musa/` subdirectories (Ruby files) and `README.md` files in each project. Once indexed, your private works appear in `search` (kind: `"all"` or `"private_works"`) and `similar_works` results.
 
-> **For plugin developers:** The skill wraps `mcp_server/indexer.rb`, which supports `--add-work PATH`, `--scan DIR`, `--list-works`, `--remove-work NAME`, and `--status`.
+> **For plugin developers:** The `/index` skill uses the MCP tools (`list_works`, `add_work`, `scan_works`, `remove_work`, `index_status`). The CLI (`mcp_server/indexer.rb`) is only used for building the public knowledge base (`--chunks-only`, `--embed`, `--status`).
 
 ## Development (plugin maintainers)
 
@@ -124,7 +129,7 @@ musa-claude-plugin/
 │   └── setup/               # /setup skill — configuration and troubleshooting
 ├── rules/                   # Static reference (always in context)
 ├── mcp_server/              # Ruby MCP server + sqlite-vec
-│   ├── server.rb            # MCP tools (6 tools)
+│   ├── server.rb            # MCP tools (11 tools)
 │   ├── search.rb            # Dual-DB search (knowledge.db + private.db)
 │   ├── chunker.rb           # Source material → chunks
 │   ├── indexer.rb           # Chunk + embed + store orchestrator

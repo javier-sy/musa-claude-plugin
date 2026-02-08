@@ -3,14 +3,12 @@
 
 # Orchestrator: chunk + embed + store into sqlite-vec.
 #
-# Usage:
+# CLI usage (public knowledge base build):
 #   ruby mcp_server/indexer.rb --source-root ../.. --chunks-only
 #   ruby mcp_server/indexer.rb --source-root ../.. --embed
-#   ruby mcp_server/indexer.rb --add-work /path/to/work
-#   ruby mcp_server/indexer.rb --scan /path/to/works
-#   ruby mcp_server/indexer.rb --list-works
-#   ruby mcp_server/indexer.rb --remove-work NAME
 #   ruby mcp_server/indexer.rb --status
+#
+# Private works management is handled via MCP tools (see server.rb).
 
 require "json"
 require "optparse"
@@ -71,47 +69,52 @@ module MusaKnowledgeBase
     end
 
     def do_chunks_only(source_root, chunks_dir)
-      puts "Chunking sources from: #{source_root}"
+      lines = ["Chunking sources from: #{source_root}"]
       chunks = Chunker.chunk_all_sources(source_root)
       manifest = write_chunks_jsonl(chunks, chunks_dir)
-      puts "Generated #{manifest['total_chunks']} chunks:"
-      manifest["by_kind"].each { |kind, count| puts "  #{kind}: #{count}" }
-      puts "Written to: #{chunks_dir}"
+      lines << "Generated #{manifest['total_chunks']} chunks:"
+      manifest["by_kind"].each { |kind, count| lines << "  #{kind}: #{count}" }
+      lines << "Written to: #{chunks_dir}"
+      lines.join("\n")
     end
 
     def do_embed(source_root, chunks_dir, db_path)
       require_relative "db"
 
+      lines = []
+
       # Step 1: Generate chunks if not already present
       manifest_path = File.join(chunks_dir, "manifest.json")
       unless File.exist?(manifest_path)
-        puts "No existing chunks found, generating..."
-        do_chunks_only(source_root, chunks_dir)
+        lines << "No existing chunks found, generating..."
+        lines << do_chunks_only(source_root, chunks_dir)
       end
 
       # Step 2: Read chunks
-      puts "Reading chunks..."
+      lines << "Reading chunks..."
       chunks = read_chunks_jsonl(chunks_dir)
-      puts "Read #{chunks.length} chunks"
+      lines << "Read #{chunks.length} chunks"
 
       # Step 3: Embed and store
-      puts "Embedding and storing in knowledge base at: #{db_path}"
+      lines << "Embedding and storing in knowledge base at: #{db_path}"
       db = DB.open(db_path)
       begin
         DB.create_schema(db)
         DB.upsert_chunks(db, chunks)
 
         # Step 4: Store repo version metadata for GitHub URL generation
-        puts "Storing source metadata..."
+        lines << "Storing source metadata..."
         store_source_metadata(db, source_root)
       ensure
         db.close
       end
-      puts "Done!"
+      lines << "Done!"
 
       # Write version marker
       require "time"
       File.write("#{db_path}.version", Time.now.utc.iso8601)
+
+      lines.join("\n")
     end
 
     # Extract VERSION constants from source repos and store as metadata.
@@ -182,11 +185,10 @@ module MusaKnowledgeBase
       end
 
       if chunks.empty?
-        puts "No content found in: #{work_path}"
-        return
+        return "No content found in: #{work_path}"
       end
 
-      puts "Indexing #{chunks.length} chunks from: #{File.basename(work_path)}"
+      lines = ["Indexing #{chunks.length} chunks from: #{File.basename(work_path)}"]
       FileUtils.mkdir_p(File.dirname(db_path))
       db = DB.open(db_path)
       begin
@@ -195,10 +197,12 @@ module MusaKnowledgeBase
       ensure
         db.close
       end
-      puts "Done!"
+      lines << "Done!"
+      lines.join("\n")
     end
 
     def do_scan(scan_dir, db_path)
+      lines = []
       works_found = 0
       Dir.children(scan_dir).sort.each do |entry|
         full_path = File.join(scan_dir, entry)
@@ -207,24 +211,24 @@ module MusaKnowledgeBase
         musa_dir = File.join(full_path, "musa")
         readme = File.join(full_path, "README.md")
         if File.directory?(musa_dir) || File.exist?(readme)
-          do_add_work(full_path, db_path)
+          lines << do_add_work(full_path, db_path)
           works_found += 1
         end
       end
 
       if works_found == 0
-        puts "No composition works found in: #{scan_dir}"
+        lines << "No composition works found in: #{scan_dir}"
       else
-        puts "\nIndexed #{works_found} works from: #{scan_dir}"
+        lines << "\nIndexed #{works_found} works from: #{scan_dir}"
       end
+      lines.join("\n")
     end
 
     def do_list_works(private_db_path)
       require_relative "db"
 
       unless File.exist?(private_db_path)
-        puts "No private works indexed yet."
-        return
+        return "No private works indexed yet."
       end
 
       db = DB.open(private_db_path)
@@ -235,27 +239,25 @@ module MusaKnowledgeBase
       end
 
       if works.empty?
-        puts "No private works indexed yet."
-        return
+        return "No private works indexed yet."
       end
 
-      puts "Indexed private works:"
-      puts ""
-      puts format("  %-40s %s", "Work", "Chunks")
-      puts "  #{'-' * 40} #{'-' * 6}"
+      lines = ["Indexed private works:", ""]
+      lines << format("  %-40s %s", "Work", "Chunks")
+      lines << "  #{'-' * 40} #{'-' * 6}"
       works.each do |row|
-        puts format("  %-40s %d", row["work_name"], row["chunk_count"])
+        lines << format("  %-40s %d", row["work_name"], row["chunk_count"])
       end
-      puts ""
-      puts "Total: #{works.length} works, #{works.sum { |r| r['chunk_count'] }} chunks"
+      lines << ""
+      lines << "Total: #{works.length} works, #{works.sum { |r| r['chunk_count'] }} chunks"
+      lines.join("\n")
     end
 
     def do_remove_work(work_name, private_db_path)
       require_relative "db"
 
       unless File.exist?(private_db_path)
-        puts "No private works indexed yet."
-        return
+        return "No private works indexed yet."
       end
 
       db = DB.open(private_db_path)
@@ -266,57 +268,92 @@ module MusaKnowledgeBase
       end
 
       if count == 0
-        puts "Work '#{work_name}' not found in index."
+        "Work '#{work_name}' not found in index."
       else
-        puts "Removed #{count} chunks for '#{work_name}'."
+        "Removed #{count} chunks for '#{work_name}'."
       end
     end
 
     def do_status(chunks_dir, db_path, private_db_path)
+      lines = []
+
       # Check chunks
       manifest_path = File.join(chunks_dir, "manifest.json")
       if File.exist?(manifest_path)
         manifest = JSON.parse(File.read(manifest_path))
-        puts "Chunks: #{manifest['total_chunks']} total"
-        manifest["by_kind"].each { |kind, count| puts "  #{kind}: #{count}" }
+        lines << "Chunks: #{manifest['total_chunks']} total"
+        manifest["by_kind"].each { |kind, count| lines << "  #{kind}: #{count}" }
       else
-        puts "Chunks: not generated (run --chunks-only)"
+        lines << "Chunks: not generated (run --chunks-only)"
       end
 
       # Check knowledge DB
       version_file = "#{db_path}.version"
       if File.exist?(version_file)
         version = File.read(version_file).strip
-        puts "\nKnowledge DB: present (built #{version})"
+        lines << "\nKnowledge DB: present (built #{version})"
 
         begin
           require_relative "db"
           db = DB.open(db_path)
           stats = DB.collection_stats(db)
           db.close
-          stats.each { |name, count| puts "  #{name}: #{count} documents" }
+          stats.each { |name, count| lines << "  #{name}: #{count} documents" }
         rescue => e
-          puts "  (could not read stats: #{e})"
+          lines << "  (could not read stats: #{e})"
         end
       else
-        puts "\nKnowledge DB: not built (run --embed)"
+        lines << "\nKnowledge DB: not built (run --embed)"
       end
 
       # Check private DB
       if File.exist?(private_db_path)
-        puts "\nPrivate DB: present"
+        lines << "\nPrivate DB: present"
         begin
           require_relative "db"
           db = DB.open(private_db_path)
           stats = DB.collection_stats(db)
           db.close
-          stats.each { |name, count| puts "  #{name}: #{count} documents" }
+          stats.each { |name, count| lines << "  #{name}: #{count} documents" }
         rescue => e
-          puts "  (could not read stats: #{e})"
+          lines << "  (could not read stats: #{e})"
         end
       else
-        puts "\nPrivate DB: not present (use --add-work, --scan, or /index to index private works)"
+        lines << "\nPrivate DB: not present (use /index to manage private works)"
       end
+
+      lines.join("\n")
+    end
+
+    # Public API for MCP tools (resolve paths automatically)
+
+    def list_works
+      require_relative "db"
+      do_list_works(DB.default_private_db_path)
+    end
+
+    def add_work(work_path)
+      require_relative "db"
+      do_add_work(work_path, DB.default_private_db_path)
+    end
+
+    def scan_works(directory)
+      require_relative "db"
+      do_scan(directory, DB.default_private_db_path)
+    end
+
+    def remove_work(work_name)
+      require_relative "db"
+      do_remove_work(work_name, DB.default_private_db_path)
+    end
+
+    def index_status
+      require_relative "db"
+      script_dir = __dir__
+      plugin_root = File.dirname(script_dir)
+      chunks_dir = File.join(plugin_root, "data", "chunks")
+      db_path = File.join(script_dir, "knowledge.db")
+      do_status(chunks_dir, db_path, DB.default_private_db_path)
     end
 
     def main
@@ -343,21 +380,6 @@ module MusaKnowledgeBase
         opts.on("--embed", "Generate chunks + embeddings + DB (requires VOYAGE_API_KEY)") do
           options[:command] = :embed
         end
-        opts.on("--add-work PATH", "Index a private composition work") do |v|
-          options[:command] = :add_work
-          options[:work_path] = v
-        end
-        opts.on("--scan DIR", "Scan directory for composition works and index all") do |v|
-          options[:command] = :scan
-          options[:scan_dir] = v
-        end
-        opts.on("--list-works", "List all indexed private works") do
-          options[:command] = :list_works
-        end
-        opts.on("--remove-work NAME", "Remove a private work from the index") do |v|
-          options[:command] = :remove_work
-          options[:work_name] = v
-        end
         opts.on("--status", "Show index status") do
           options[:command] = :status
         end
@@ -376,20 +398,12 @@ module MusaKnowledgeBase
       case options[:command]
       when :chunks_only
         abort "Error: --source-root is required for --chunks-only" unless options[:source_root]
-        do_chunks_only(options[:source_root], chunks_dir)
+        puts do_chunks_only(options[:source_root], chunks_dir)
       when :embed
         abort "Error: --source-root is required for --embed" unless options[:source_root]
-        do_embed(options[:source_root], chunks_dir, db_path)
-      when :add_work
-        do_add_work(options[:work_path], private_db_path)
-      when :scan
-        do_scan(options[:scan_dir], private_db_path)
-      when :list_works
-        do_list_works(private_db_path)
-      when :remove_work
-        do_remove_work(options[:work_name], private_db_path)
+        puts do_embed(options[:source_root], chunks_dir, db_path)
       when :status
-        do_status(chunks_dir, db_path, private_db_path)
+        puts do_status(chunks_dir, db_path, private_db_path)
       else
         puts parser
         exit 1

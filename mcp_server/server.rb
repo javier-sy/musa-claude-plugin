@@ -207,6 +207,104 @@ class CheckSetupTool < MCP::Tool
   end
 end
 
+class ListWorksTool < MCP::Tool
+  description("List all indexed private works with chunk counts.")
+
+  class << self
+    def call(server_context:)
+      require_relative "indexer"
+      result = MusaKnowledgeBase::Indexer.list_works
+      MCP::Tool::Response.new([{ type: "text", text: result }])
+    end
+  end
+end
+
+class AddWorkTool < MCP::Tool
+  description(
+    "Index a private composition work. " \
+    "Parses Ruby files in musa/ subdirectory and README.md."
+  )
+
+  input_schema(
+    properties: {
+      work_path: {
+        type: "string",
+        description: "Absolute path to the composition project directory"
+      }
+    },
+    required: ["work_path"]
+  )
+
+  class << self
+    def call(work_path:, server_context:)
+      require_relative "indexer"
+      result = MusaKnowledgeBase::Indexer.add_work(work_path)
+      MCP::Tool::Response.new([{ type: "text", text: result }])
+    end
+  end
+end
+
+class ScanWorksTool < MCP::Tool
+  description(
+    "Scan a directory for composition works and index all found. " \
+    "Looks for subdirectories containing musa/ or README.md."
+  )
+
+  input_schema(
+    properties: {
+      directory: {
+        type: "string",
+        description: "Absolute path to the directory containing composition projects"
+      }
+    },
+    required: ["directory"]
+  )
+
+  class << self
+    def call(directory:, server_context:)
+      require_relative "indexer"
+      result = MusaKnowledgeBase::Indexer.scan_works(directory)
+      MCP::Tool::Response.new([{ type: "text", text: result }])
+    end
+  end
+end
+
+class RemoveWorkTool < MCP::Tool
+  description("Remove a private work from the index by name.")
+
+  input_schema(
+    properties: {
+      work_name: {
+        type: "string",
+        description: "Name of the work to remove (as shown by list_works)"
+      }
+    },
+    required: ["work_name"]
+  )
+
+  class << self
+    def call(work_name:, server_context:)
+      require_relative "indexer"
+      result = MusaKnowledgeBase::Indexer.remove_work(work_name)
+      MCP::Tool::Response.new([{ type: "text", text: result }])
+    end
+  end
+end
+
+class IndexStatusTool < MCP::Tool
+  description(
+    "Show the status of both knowledge databases (public knowledge.db and private works)."
+  )
+
+  class << self
+    def call(server_context:)
+      require_relative "indexer"
+      result = MusaKnowledgeBase::Indexer.index_status
+      MCP::Tool::Response.new([{ type: "text", text: result }])
+    end
+  end
+end
+
 module MusaKnowledgeBase
   def self.run_server
     # Ensure knowledge.db exists before accepting tool calls.
@@ -229,7 +327,8 @@ module MusaKnowledgeBase
         "MusaDSL knowledge base server. Provides semantic search over " \
         "documentation, API reference, demo examples, and composition works " \
         "for the MusaDSL algorithmic composition framework in Ruby.",
-      tools: [SearchTool, ApiReferenceTool, SimilarWorksTool, DependenciesTool, PatternTool, CheckSetupTool]
+      tools: [SearchTool, ApiReferenceTool, SimilarWorksTool, DependenciesTool, PatternTool, CheckSetupTool,
+              ListWorksTool, AddWorkTool, ScanWorksTool, RemoveWorkTool, IndexStatusTool]
     )
 
     transport = MCP::Server::Transports::StdioTransport.new(server)
