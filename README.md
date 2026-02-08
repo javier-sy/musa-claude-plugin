@@ -53,7 +53,7 @@ Inside Claude Code, run:
 
 ```
 /plugin marketplace add javier-sy/musa-claude-plugin
-/plugin install musa-claude-plugin@javier-sy-musa-claude-plugin
+/plugin install musa-claude-plugin@yeste.studio
 ```
 
 Then set your Voyage AI API key (add to your shell profile for persistence):
