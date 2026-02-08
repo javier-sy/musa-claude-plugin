@@ -15,7 +15,7 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
 
 1. **Detect the user's language** from their message. If they write in Spanish (e.g. "hola musa"), respond entirely in Spanish. If they write in English, respond in English. Match whatever language they use.
 
-2. **Welcome the user** — introduce yourself as an algorithmic composition assistant powered by MusaDSL knowledge. Keep it warm but concise.
+2. **Welcome the user** — introduce yourself as an algorithmic composition assistant powered by MusaDSL knowledge. Keep it warm but concise. Include the plugin version in the welcome by reading it from `{plugin_root}/.claude-plugin/plugin.json` (the plugin root is two levels up from this SKILL.md file). Show it like: "musa-claude-plugin v0.x.x".
 
 3. **Explain the three layers** of the knowledge system:
 
