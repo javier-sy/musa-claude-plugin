@@ -10,19 +10,33 @@ This plugin gives Claude Code accurate, in-depth knowledge of the [MusaDSL](http
 2. **Semantic search** (MCP server + sqlite-vec) — retrieves relevant docs, API, and code examples on demand
 3. **Works catalog** — finds similar compositions from demos and private indexed works
 
+### Knowledge Architecture: Two Databases
+
+The plugin uses two separate databases:
+
+- **`knowledge.db`** (public) — Contains documentation, API reference, demo code, and gem READMEs from the MusaDSL ecosystem. This database is pre-built, automatically downloaded from GitHub Releases on session start, and periodically updated. You don't need to do anything to maintain it.
+
+- **`private.db`** (local, optional) — Contains your own indexed compositions. This database is never touched by automatic updates, so your private works are always safe. You create it by indexing your own composition projects (see [Indexing Private Works](#indexing-private-works) below).
+
+When you search, the plugin queries both databases and merges results by relevance (cosine distance). If `private.db` doesn't exist, searches work normally using only the public knowledge base.
+
 ### MCP Tools
 
 | Tool | Purpose |
 |------|---------|
-| `search` | Semantic search across all knowledge (docs, API, demos) |
+| `search` | Semantic search across all knowledge (docs, API, demos, private works) |
 | `api_reference` | Exact API reference lookup by module/method |
-| `similar_works` | Find similar works and demo examples |
+| `similar_works` | Find similar works and demo examples (includes private works) |
 | `dependencies` | Dependency chain for a concept (what setup is needed) |
 | `pattern` | Code pattern for a specific technique |
+| `check_setup` | Check plugin status: API key, knowledge base, private works DB |
 
-### Skill
+### Skills
 
-- `/musa-claude-plugin:explain` — Explain MusaDSL concepts with accurate, sourced answers
+| Skill | Purpose |
+|-------|---------|
+| `/musa-claude-plugin:setup` | Check plugin status, guided setup, welcome and capabilities overview |
+| `/musa-claude-plugin:explain` | Explain any MusaDSL concept with accurate, sourced answers |
 
 ## Installation (end users)
 
@@ -46,11 +60,30 @@ Then set your Voyage AI API key (add to your shell profile for persistence):
 export VOYAGE_API_KEY="your-key-here"
 ```
 
-The pre-built knowledge base is **automatically downloaded** from GitHub Releases on first session start. No additional setup is needed.
+The pre-built knowledge base (`knowledge.db`) is **automatically downloaded** from GitHub Releases on first session start. No additional setup is needed.
+
+Run `/musa-claude-plugin:setup` to verify everything is configured correctly and see the full capabilities overview.
+
+### Indexing Private Works
+
+You can index your own composition projects so Claude can reference them during search. Private works are stored in a separate local database (`private.db`) that is never affected by knowledge base updates.
+
+```bash
+# Index a single composition project
+ruby mcp_server/indexer.rb --add-work /path/to/your/composition
+
+# Scan a directory and index all composition projects found
+ruby mcp_server/indexer.rb --scan /path/to/your/works
+
+# Check status of both databases
+ruby mcp_server/indexer.rb --status
+```
+
+The indexer looks for `musa/` subdirectories (Ruby files) and `README.md` files in each project. Once indexed, your private works appear in `search` (kind: `"all"` or `"private_works"`) and `similar_works` results.
 
 ## Development (plugin maintainers)
 
-If you want to modify the plugin or rebuild the knowledge base from source, you need the full MusaDSL ecosystem cloned alongside this plugin (all repos under the same parent directory).
+This section is for contributors who want to modify the plugin itself or rebuild the public knowledge base from source. End users do not need any of this.
 
 ### Prerequisites
 
@@ -58,7 +91,7 @@ If you want to modify the plugin or rebuild the knowledge base from source, you 
 - All MusaDSL source repositories cloned as siblings of `musa-claude-plugin/`
 - `VOYAGE_API_KEY` with sufficient quota for embedding ~3000 chunks
 
-### Rebuilding the knowledge base
+### Rebuilding the public knowledge base
 
 ```bash
 # Generate chunks only (no API key needed, useful for inspection)
@@ -77,28 +110,37 @@ make status
 make clean
 ```
 
-The CI workflow (`.github/workflows/build-release.yml`) automates building and releasing the knowledge base on tagged commits.
+The CI workflow (`.github/workflows/build-release.yml`) automates building and releasing the public knowledge base. It is triggered by:
+- `repository_dispatch` events from the 7 source repositories (when they update)
+- Manual workflow dispatch
+- Pushes to main that modify the server code
+
+The CI only rebuilds `knowledge.db` — it never touches `private.db`, which is purely local to each user.
 
 ## Project Structure
 
 ```
 musa-claude-plugin/
-├── .claude-plugin/          # Plugin metadata
-├── skills/explain/          # Explain skill definition
+├── .claude-plugin/          # Plugin metadata (plugin.json, marketplace.json)
+├── skills/
+│   ├── explain/             # /explain skill — MusaDSL concept explanations
+│   └── setup/               # /setup skill — status check, welcome, guided setup
 ├── rules/                   # Static reference (always in context)
 ├── mcp_server/              # Ruby MCP server + sqlite-vec
-│   ├── server.rb            # MCP tools (5 tools)
-│   ├── search.rb            # sqlite-vec-backed search
+│   ├── server.rb            # MCP tools (6 tools)
+│   ├── search.rb            # Dual-DB search (knowledge.db + private.db)
 │   ├── chunker.rb           # Source material → chunks
 │   ├── indexer.rb           # Chunk + embed + store orchestrator
 │   ├── embeddings.rb        # Voyage AI integration
 │   ├── db.rb                # sqlite-vec database management
-│   └── ensure_db.rb         # Auto-download DB from releases
-├── hooks/                   # Session lifecycle hooks
+│   ├── ensure_db.rb         # Auto-download knowledge.db from releases
+│   ├── knowledge.db         # Public knowledge base (auto-downloaded)
+│   └── private.db           # Private works (local, user-created, never auto-updated)
+├── hooks/                   # Session lifecycle hooks (auto-download on start)
 ├── .mcp.json                # MCP server configuration
 ├── Gemfile                  # Ruby dependencies
-├── Makefile                 # Build targets
-└── .github/workflows/       # CI: build + release knowledge DB
+├── Makefile                 # Build targets (for maintainers)
+└── .github/workflows/       # CI: build + release public knowledge DB
 ```
 
 ## License
