@@ -1,0 +1,8 @@
+.idea/
+mcp_server/knowledge.db
+mcp_server/knowledge.db.version
+mcp_server/knowledge.db.last_check
+data/chunks/
+knowledge.db.gz
+vendor/bundle/
+.bundle/

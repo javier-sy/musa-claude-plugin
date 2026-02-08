@@ -1,0 +1,81 @@
+name: Build and Release Knowledge DB
+
+on:
+  repository_dispatch:
+    types: [source-updated]
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'mcp_server/chunker.rb'
+      - 'mcp_server/indexer.rb'
+      - 'mcp_server/embeddings.rb'
+      - 'mcp_server/db.rb'
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout plugin repo
+        uses: actions/checkout@v4
+
+      - name: Shallow clone source repos
+        run: |
+          mkdir -p sources
+          repos=(
+            "musa-dsl"
+            "musadsl-demo"
+            "midi-events"
+            "midi-parser"
+            "midi-communications"
+            "midi-communications-macos"
+            "musalce-server"
+          )
+          for repo in "${repos[@]}"; do
+            git clone --depth 1 "https://github.com/javier-sy/${repo}.git" "sources/${repo}" || true
+          done
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Generate chunks
+        run: |
+          bundle exec ruby mcp_server/indexer.rb \
+            --source-root sources \
+            --chunks-dir data/chunks \
+            --chunks-only
+
+      - name: Embed and build knowledge DB
+        env:
+          VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
+        run: |
+          bundle exec ruby mcp_server/indexer.rb \
+            --source-root sources \
+            --chunks-dir data/chunks \
+            --db-path mcp_server/knowledge.db \
+            --embed
+
+      - name: Package knowledge DB
+        run: gzip -c mcp_server/knowledge.db > knowledge.db.gz
+
+      - name: Get current date for tag
+        id: date
+        run: echo "date=$(date -u +%Y%m%d%H%M%S)" >> "$GITHUB_OUTPUT"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "db-${{ steps.date.outputs.date }}"
+          name: "Knowledge DB ${{ steps.date.outputs.date }}"
+          body: |
+            Automated knowledge DB build from source repositories.
+
+            Triggered by: ${{ github.event_name }}
+          files: knowledge.db.gz
+          make_latest: true

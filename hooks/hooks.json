@@ -1,0 +1,16 @@
+{
+  "description": "MusaDSL knowledge base lifecycle hooks",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ruby ${CLAUDE_PLUGIN_ROOT}/mcp_server/ensure_db.rb",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

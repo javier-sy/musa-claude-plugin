@@ -1,0 +1,24 @@
+# Template: Add this workflow to source repos (musa-dsl, musadsl-demo, etc.)
+# to trigger musa-claude-plugin rebuild when source changes.
+#
+# Required secret: PLUGIN_REBUILD_PAT
+#   - Fine-grained PAT scoped to javier-sy/musa-claude-plugin
+#   - Permissions: Contents (Read), Actions (Write)
+
+name: Notify Plugin Rebuild
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger musa-claude-plugin rebuild
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PLUGIN_REBUILD_PAT }}
+          repository: javier-sy/musa-claude-plugin
+          event-type: source-updated
+          client-payload: '{"repo": "${{ github.repository }}", "sha": "${{ github.sha }}"}'

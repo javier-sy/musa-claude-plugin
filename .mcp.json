@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "knowledge-base": {
+      "command": "ruby",
+      "args": ["-r", "bundler/setup", "${CLAUDE_PLUGIN_ROOT}/mcp_server/server.rb"],
+      "env": {
+        "VOYAGE_API_KEY": "${VOYAGE_API_KEY}",
+        "KNOWLEDGE_DB_PATH": "${CLAUDE_PLUGIN_ROOT}/mcp_server/knowledge.db",
+        "BUNDLE_GEMFILE": "${CLAUDE_PLUGIN_ROOT}/Gemfile"
+      },
+      "cwd": "${CLAUDE_PLUGIN_ROOT}"
+    }
+  }
+}
