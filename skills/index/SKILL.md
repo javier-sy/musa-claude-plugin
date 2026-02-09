@@ -37,14 +37,6 @@ Call the `add_work` MCP tool with the `work_path` parameter (absolute path to th
 
 After success, mention that the work now appears in `search` (kind: `"all"` or `"private_works"`) and `similar_works` results.
 
-### Scan a directory
-
-When the user wants to index all compositions in a directory.
-
-Call the `scan_works` MCP tool with the `directory` parameter (absolute path to the directory containing composition projects).
-
-After success, suggest calling `list_works` to verify what was indexed.
-
 ### Update a work
 
 When the user has modified a composition and wants to re-index it. The safest approach is remove + add:
@@ -75,12 +67,12 @@ Call the `index_status` MCP tool (no parameters).
 
 ## What gets indexed
 
-The indexer looks for these inside each composition project directory:
+The indexer recursively indexes all files in the given directory:
 
-- **`musa/`** subdirectory — all `.rb` files (Ruby code using MusaDSL)
-- **`README.md`** — project description and notes
+- **`.rb` files** — Ruby source code (MusaDSL compositions, scripts, etc.)
+- **`.md` files** — Markdown documentation, READMEs, notes
 
-Projects that have neither are skipped.
+Files under `vendor/` and `.bundle/` are excluded. The work name is the basename of the directory.
 
 ## Important
 

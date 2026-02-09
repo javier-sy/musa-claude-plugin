@@ -52,7 +52,6 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
    | `check_setup` | Check the status of the plugin configuration |
    | `list_works` | List all indexed private works with chunk counts |
    | `add_work` | Index a private composition work from a given path |
-   | `scan_works` | Scan a directory and index all composition works found |
    | `remove_work` | Remove a private work from the index by name |
    | `index_status` | Show status of both knowledge databases (public and private) |
 

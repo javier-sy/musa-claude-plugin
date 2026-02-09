@@ -152,44 +152,26 @@ module MusaKnowledgeBase
       end
     end
 
-    # Find all Gemfiles under path that reference musa-dsl.
-    def find_musa_gemfiles(path)
-      Dir.glob(File.join(path, "**/Gemfile"))
-         .reject { |f| f.include?("/vendor/") || f.include?("/.bundle/") }
-         .select { |gemfile| File.read(gemfile).match?(/['"]musa-dsl['"]/) }
-    end
-
     def do_add_work(work_path, db_path)
       require_relative "db"
 
-      musa_gemfiles = find_musa_gemfiles(work_path)
-      component_dirs = musa_gemfiles.map { |g| File.dirname(g) }.sort
-
       chunks = []
 
-      # Parse Ruby files from each musa-dsl component directory
-      component_dirs.each do |comp_dir|
-        rb_files = Dir.glob(File.join(comp_dir, "**/*.rb"))
-                      .reject { |f| f.include?("/vendor/") || f.include?("/.bundle/") }
-
-        # Exclude .rb files that belong to a deeper nested component
-        rb_files.reject! do |f|
-          component_dirs.any? { |other| other != comp_dir && f.start_with?(other + "/") && other.start_with?(comp_dir + "/") }
-        end
-
-        rb_files.sort.each do |rb_file|
-          rel = Pathname.new(rb_file).relative_path_from(Pathname.new(work_path)).to_s
-          chunks.concat(
-            Chunker.chunk_demo_code(
-              rb_file,
-              kind: "private_works",
-              source_label: "#{File.basename(work_path)}/#{rel}"
-            )
+      # Index all Ruby files recursively
+      Dir.glob(File.join(work_path, "**/*.rb"))
+         .reject { |f| f.include?("/vendor/") || f.include?("/.bundle/") }
+         .sort.each do |rb_file|
+        rel = Pathname.new(rb_file).relative_path_from(Pathname.new(work_path)).to_s
+        chunks.concat(
+          Chunker.chunk_demo_code(
+            rb_file,
+            kind: "private_works",
+            source_label: "#{File.basename(work_path)}/#{rel}"
           )
-        end
+        )
       end
 
-      # Parse all Markdown files from project root
+      # Index all Markdown files recursively
       Dir.glob(File.join(work_path, "**/*.md"))
          .reject { |f| f.include?("/vendor/") || f.include?("/.bundle/") }
          .sort.each do |md_file|
@@ -217,27 +199,6 @@ module MusaKnowledgeBase
         db.close
       end
       lines << "Done!"
-      lines.join("\n")
-    end
-
-    def do_scan(scan_dir, db_path)
-      lines = []
-      works_found = 0
-      Dir.children(scan_dir).sort.each do |entry|
-        full_path = File.join(scan_dir, entry)
-        next unless File.directory?(full_path)
-
-        if find_musa_gemfiles(full_path).any?
-          lines << do_add_work(full_path, db_path)
-          works_found += 1
-        end
-      end
-
-      if works_found == 0
-        lines << "No composition works found in: #{scan_dir}"
-      else
-        lines << "\nIndexed #{works_found} works from: #{scan_dir}"
-      end
       lines.join("\n")
     end
 
@@ -352,11 +313,6 @@ module MusaKnowledgeBase
     def add_work(work_path)
       require_relative "db"
       do_add_work(work_path, DB.default_private_db_path)
-    end
-
-    def scan_works(directory)
-      require_relative "db"
-      do_scan(directory, DB.default_private_db_path)
     end
 
     def remove_work(work_name)

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# MCP server exposing MusaDSL knowledge base tools.
+# MCP server exposing MusaDSL knowledge base tools (10 tools).
 
 require "mcp"
 
@@ -222,7 +222,7 @@ end
 class AddWorkTool < MCP::Tool
   description(
     "Index a private composition work. " \
-    "Parses Ruby files in musa/ subdirectory and README.md."
+    "Indexes all Ruby and Markdown files recursively from the given directory."
   )
 
   input_schema(
@@ -239,31 +239,6 @@ class AddWorkTool < MCP::Tool
     def call(work_path:, server_context:)
       require_relative "indexer"
       result = MusaKnowledgeBase::Indexer.add_work(work_path)
-      MCP::Tool::Response.new([{ type: "text", text: result }])
-    end
-  end
-end
-
-class ScanWorksTool < MCP::Tool
-  description(
-    "Scan a directory for composition works and index all found. " \
-    "Looks for subdirectories containing musa/ or README.md."
-  )
-
-  input_schema(
-    properties: {
-      directory: {
-        type: "string",
-        description: "Absolute path to the directory containing composition projects"
-      }
-    },
-    required: ["directory"]
-  )
-
-  class << self
-    def call(directory:, server_context:)
-      require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.scan_works(directory)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -328,7 +303,7 @@ module MusaKnowledgeBase
         "documentation, API reference, demo examples, and composition works " \
         "for the MusaDSL algorithmic composition framework in Ruby.",
       tools: [SearchTool, ApiReferenceTool, SimilarWorksTool, DependenciesTool, PatternTool, CheckSetupTool,
-              ListWorksTool, AddWorkTool, ScanWorksTool, RemoveWorkTool, IndexStatusTool]
+              ListWorksTool, AddWorkTool, RemoveWorkTool, IndexStatusTool]
     )
 
     transport = MCP::Server::Transports::StdioTransport.new(server)
