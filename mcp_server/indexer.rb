@@ -152,15 +152,32 @@ module MusaKnowledgeBase
       end
     end
 
+    # Find all Gemfiles under path that reference musa-dsl.
+    def find_musa_gemfiles(path)
+      Dir.glob(File.join(path, "**/Gemfile"))
+         .reject { |f| f.include?("/vendor/") || f.include?("/.bundle/") }
+         .select { |gemfile| File.read(gemfile).match?(/['"]musa-dsl['"]/) }
+    end
+
     def do_add_work(work_path, db_path)
       require_relative "db"
 
+      musa_gemfiles = find_musa_gemfiles(work_path)
+      component_dirs = musa_gemfiles.map { |g| File.dirname(g) }.sort
+
       chunks = []
 
-      # Parse Ruby files in musa/ subdirectory
-      musa_dir = File.join(work_path, "musa")
-      if File.directory?(musa_dir)
-        Dir.glob(File.join(musa_dir, "*.rb")).sort.each do |rb_file|
+      # Parse Ruby files from each musa-dsl component directory
+      component_dirs.each do |comp_dir|
+        rb_files = Dir.glob(File.join(comp_dir, "**/*.rb"))
+                      .reject { |f| f.include?("/vendor/") || f.include?("/.bundle/") }
+
+        # Exclude .rb files that belong to a deeper nested component
+        rb_files.reject! do |f|
+          component_dirs.any? { |other| other != comp_dir && f.start_with?(other + "/") && other.start_with?(comp_dir + "/") }
+        end
+
+        rb_files.sort.each do |rb_file|
           rel = Pathname.new(rb_file).relative_path_from(Pathname.new(work_path)).to_s
           chunks.concat(
             Chunker.chunk_demo_code(
@@ -172,14 +189,16 @@ module MusaKnowledgeBase
         end
       end
 
-      # Parse README if present
-      readme = File.join(work_path, "README.md")
-      if File.exist?(readme)
+      # Parse all Markdown files from project root
+      Dir.glob(File.join(work_path, "**/*.md"))
+         .reject { |f| f.include?("/vendor/") || f.include?("/.bundle/") }
+         .sort.each do |md_file|
+        rel = Pathname.new(md_file).relative_path_from(Pathname.new(work_path)).to_s
         chunks.concat(
           Chunker.chunk_markdown(
-            readme,
+            md_file,
             kind: "private_works",
-            source_label: "#{File.basename(work_path)}/README.md"
+            source_label: "#{File.basename(work_path)}/#{rel}"
           )
         )
       end
@@ -208,9 +227,7 @@ module MusaKnowledgeBase
         full_path = File.join(scan_dir, entry)
         next unless File.directory?(full_path)
 
-        musa_dir = File.join(full_path, "musa")
-        readme = File.join(full_path, "README.md")
-        if File.directory?(musa_dir) || File.exist?(readme)
+        if find_musa_gemfiles(full_path).any?
           lines << do_add_work(full_path, db_path)
           works_found += 1
         end
