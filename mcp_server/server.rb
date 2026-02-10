@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# MCP server exposing MusaDSL knowledge base tools (10 tools).
+# MCP server exposing MusaDSL knowledge base tools (14 tools).
 
 require "mcp"
 
@@ -10,7 +10,7 @@ require_relative "search"
 class SearchTool < MCP::Tool
   description(
     "Search the MusaDSL knowledge base semantically. " \
-    "Returns relevant passages from documentation, API, and examples with source attribution."
+    "Returns relevant passages from documentation, API, examples, private works, and composition analyses with source attribution."
   )
 
   input_schema(
@@ -21,8 +21,8 @@ class SearchTool < MCP::Tool
       },
       kind: {
         type: "string",
-        description: 'Filter by content type. Options: "all", "docs", "api", "demo_readme", "demo_code", "gem_readme", "private_works".',
-        enum: %w[all docs api demo_readme demo_code gem_readme private_works],
+        description: 'Filter by content type. Options: "all", "docs", "api", "demo_readme", "demo_code", "gem_readme", "private_works", "analysis".',
+        enum: %w[all docs api demo_readme demo_code gem_readme private_works analysis],
         default: "all"
       }
     },
@@ -69,7 +69,7 @@ end
 class SimilarWorksTool < MCP::Tool
   description(
     "Find similar works, demos, or composition examples. " \
-    "Returns similar demo projects and composition examples with descriptions and key code patterns used."
+    "Returns similar demo projects, composition examples, and related analyses with descriptions and key code patterns used."
   )
 
   input_schema(
@@ -245,7 +245,7 @@ class AddWorkTool < MCP::Tool
 end
 
 class RemoveWorkTool < MCP::Tool
-  description("Remove a private work from the index by name.")
+  description("Remove a private work from the index by name. Also removes any associated analysis.")
 
   input_schema(
     properties: {
@@ -280,6 +280,91 @@ class IndexStatusTool < MCP::Tool
   end
 end
 
+class GetAnalysisFrameworkTool < MCP::Tool
+  description(
+    "Get the current analysis framework used for composition analysis. " \
+    "Returns the framework content and whether it is the default or a user-customized version."
+  )
+
+  class << self
+    def call(server_context:)
+      require_relative "indexer"
+      result = MusaKnowledgeBase::Indexer.get_analysis_framework
+      text = "**Source**: #{result[:source]}\n\n#{result[:content]}"
+      MCP::Tool::Response.new([{ type: "text", text: text }])
+    end
+  end
+end
+
+class SaveAnalysisFrameworkTool < MCP::Tool
+  description(
+    "Save a customized analysis framework. " \
+    "Replaces the current framework with the provided content."
+  )
+
+  input_schema(
+    properties: {
+      content: {
+        type: "string",
+        description: "The full markdown content of the analysis framework (with ## sections for each dimension)"
+      }
+    },
+    required: ["content"]
+  )
+
+  class << self
+    def call(content:, server_context:)
+      require_relative "indexer"
+      result = MusaKnowledgeBase::Indexer.save_analysis_framework(content)
+      MCP::Tool::Response.new([{ type: "text", text: result }])
+    end
+  end
+end
+
+class ResetAnalysisFrameworkTool < MCP::Tool
+  description(
+    "Reset the analysis framework to the default. " \
+    "Removes any user customization."
+  )
+
+  class << self
+    def call(server_context:)
+      require_relative "indexer"
+      result = MusaKnowledgeBase::Indexer.reset_analysis_framework
+      MCP::Tool::Response.new([{ type: "text", text: result }])
+    end
+  end
+end
+
+class AddAnalysisTool < MCP::Tool
+  description(
+    "Store a composition analysis in the knowledge base. " \
+    "The analysis text is chunked by ## sections and indexed for semantic search."
+  )
+
+  input_schema(
+    properties: {
+      work_name: {
+        type: "string",
+        description: "Name of the work being analyzed (as shown by list_works, e.g. '2024-01-15 Piece Name [musa bw]')"
+      },
+      analysis_text: {
+        type: "string",
+        description: "The full analysis text in markdown format (with ## sections for each analytical dimension)"
+      }
+    },
+    required: %w[work_name analysis_text]
+  )
+
+  class << self
+    def call(work_name:, analysis_text:, server_context:)
+      require_relative "indexer"
+      result = MusaKnowledgeBase::Indexer.add_analysis(work_name, analysis_text)
+      MCP::Tool::Response.new([{ type: "text", text: result }])
+    end
+  end
+end
+
 module MusaKnowledgeBase
   def self.run_server
     # Ensure knowledge.db exists before accepting tool calls.
@@ -303,7 +388,8 @@ module MusaKnowledgeBase
         "documentation, API reference, demo examples, and composition works " \
         "for the MusaDSL algorithmic composition framework in Ruby.",
       tools: [SearchTool, ApiReferenceTool, SimilarWorksTool, DependenciesTool, PatternTool, CheckSetupTool,
-              ListWorksTool, AddWorkTool, RemoveWorkTool, IndexStatusTool]
+              ListWorksTool, AddWorkTool, RemoveWorkTool, IndexStatusTool,
+              GetAnalysisFrameworkTool, SaveAnalysisFrameworkTool, ResetAnalysisFrameworkTool, AddAnalysisTool]
     )
 
     transport = MCP::Server::Transports::StdioTransport.new(server)

@@ -63,6 +63,33 @@ module MusaKnowledgeBase
       chunks
     end
 
+    # Chunk an in-memory markdown text (not a file) into sections by ## headings.
+    # Used for analysis text that is generated programmatically.
+    def chunk_markdown_text(text, kind:, source_label:)
+      sections = split_by_headings(text)
+      chunks = []
+
+      sections.each_with_index do |(heading, body), i|
+        content = body.strip
+        next if content.empty? && (heading.nil? || heading.empty?)
+
+        content = "## #{heading}\n\n#{content}" if heading && !heading.empty?
+
+        chunks << Chunk.new(
+          stable_id(kind, source_label, i),
+          content,
+          {
+            "source"       => source_label,
+            "kind"         => kind,
+            "section"      => (heading && !heading.empty?) ? heading : "(intro)",
+            "content_hash" => content_hash(content)
+          }
+        )
+      end
+
+      chunks
+    end
+
     def split_by_headings(text)
       pattern = /^## (.+)$/
       sections = []

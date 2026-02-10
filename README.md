@@ -1,6 +1,6 @@
 # musa-claude-plugin
 
-Deep MusaDSL knowledge for Claude Code — semantic search over documentation, API reference, and examples for algorithmic composition.
+Deep MusaDSL knowledge for Claude Code — semantic search over documentation, API reference, and examples, plus structured musical analysis of compositions.
 
 ## What it does
 
@@ -16,7 +16,7 @@ The plugin uses two separate databases:
 
 - **`knowledge.db`** (public) — Contains documentation, API reference, demo code, and gem READMEs from the MusaDSL ecosystem. This database is pre-built, automatically downloaded from GitHub Releases on session start, and periodically updated. You don't need to do anything to maintain it.
 
-- **`private.db`** (local, optional) — Contains your own indexed compositions. Stored at `~/.config/musa-claude-plugin/private.db`, outside the plugin directory, so it persists across plugin updates. This database is never touched by automatic updates — your private works are always safe. You create it by indexing your own composition projects (see [Indexing Private Works](#indexing-private-works) below).
+- **`private.db`** (local, optional) — Contains your own indexed compositions and their musical analyses. Stored at `~/.config/musa-claude-plugin/private.db`, outside the plugin directory, so it persists across plugin updates. This database is never touched by automatic updates — your private works are always safe. You create it by indexing your own composition projects (see [Indexing Private Works](#indexing-private-works) below) and generating analyses (see [Analyzing Compositions](#analyzing-compositions)).
 
 When you search, the plugin queries both databases and merges results by relevance (cosine distance). If `private.db` doesn't exist, searches work normally using only the public knowledge base.
 
@@ -24,16 +24,20 @@ When you search, the plugin queries both databases and merges results by relevan
 
 | Tool | Purpose |
 |------|---------|
-| `search` | Semantic search across all knowledge (docs, API, demos, private works) |
+| `search` | Semantic search across all knowledge (docs, API, demos, private works, analyses) |
 | `api_reference` | Exact API reference lookup by module/method |
-| `similar_works` | Find similar works and demo examples (includes private works) |
+| `similar_works` | Find similar works and demo examples (includes private works and analyses) |
 | `dependencies` | Dependency chain for a concept (what setup is needed) |
 | `pattern` | Code pattern for a specific technique |
 | `check_setup` | Check plugin status: API key, knowledge base, private works DB |
 | `list_works` | List all indexed private works with chunk counts |
 | `add_work` | Index a private composition work from a given path |
-| `remove_work` | Remove a private work from the index by name |
+| `remove_work` | Remove a private work from the index by name (also removes associated analysis) |
 | `index_status` | Show status of both knowledge databases (public and private) |
+| `get_analysis_framework` | Get the current analysis framework (default or user-customized) |
+| `save_analysis_framework` | Save a customized analysis framework |
+| `reset_analysis_framework` | Reset the analysis framework to default |
+| `add_analysis` | Store a composition analysis in the knowledge base |
 
 ### Skills
 
@@ -43,6 +47,8 @@ When you search, the plugin queries both databases and merges results by relevan
 | `/setup` | Plugin configuration and troubleshooting |
 | `/explain` | Explain any MusaDSL concept with accurate, sourced answers |
 | `/index` | Manage private works index (add, list, update, remove compositions) |
+| `/analyze` | Generate a structured musical analysis of a composition |
+| `/analysis_framework` | View, customize, or reset the analysis framework dimensions |
 
 ## Installation (end users)
 
@@ -79,6 +85,16 @@ Use `/index` to manage your private works — add, update, remove, and list inde
 The indexer recursively indexes all `.rb` and `.md` files from the given directory. Once indexed, your private works appear in `search` (kind: `"all"` or `"private_works"`) and `similar_works` results.
 
 > **For plugin developers:** The `/index` skill uses the MCP tools (`list_works`, `add_work`, `remove_work`, `index_status`). The CLI (`mcp_server/indexer.rb`) is only used for building the public knowledge base (`--chunks-only`, `--embed`, `--status`).
+
+### Analyzing Compositions
+
+Beyond indexing code, you can generate structured musical analyses of your compositions. Use `/analyze` to have Claude read your code, interpret it musically, and produce a detailed analysis covering multiple dimensions (formal structure, harmonic language, generative strategy, etc.).
+
+Analyses are stored as searchable knowledge in `private.db` (kind: `"analysis"`), so they enrich future searches and `similar_works` results. This transforms search from "what does the code say" to "what does the code do musically."
+
+The analysis is guided by a configurable **analysis framework** — a set of analytical dimensions. Use `/analysis_framework` to view, customize, or reset the dimensions. The default framework covers 8 dimensions including formal structure, harmonic language, rhythmic strategy, generative tools, texture, idiomatic usage, relations to other artists, and notable patterns.
+
+Removing a work with `/index` also removes its associated analysis.
 
 ## Development (plugin maintainers)
 
@@ -125,10 +141,14 @@ musa-claude-plugin/
 │   ├── hello/               # /hello skill — welcome and capabilities overview
 │   ├── explain/             # /explain skill — MusaDSL concept explanations
 │   ├── index/               # /index skill — manage private works index
+│   ├── analyze/             # /analyze skill — structured composition analysis
+│   ├── analysis_framework/  # /analysis_framework skill — manage analysis dimensions
 │   └── setup/               # /setup skill — configuration and troubleshooting
+├── defaults/                # Default configuration files
+│   └── analysis-framework.md  # Default analysis framework (8 dimensions)
 ├── rules/                   # Static reference (always in context)
 ├── mcp_server/              # Ruby MCP server + sqlite-vec
-│   ├── server.rb            # MCP tools (10 tools)
+│   ├── server.rb            # MCP tools (14 tools)
 │   ├── search.rb            # Dual-DB search (knowledge.db + private.db)
 │   ├── chunker.rb           # Source material → chunks
 │   ├── indexer.rb           # Chunk + embed + store orchestrator

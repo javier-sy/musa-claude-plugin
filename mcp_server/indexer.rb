@@ -21,6 +21,10 @@ module MusaKnowledgeBase
   module Indexer
     module_function
 
+    USER_FRAMEWORK_DIR = File.join(Dir.home, ".config", "musa-claude-plugin")
+    DEFAULT_FRAMEWORK_PATH = File.join(File.dirname(__dir__), "defaults", "analysis-framework.md")
+    USER_FRAMEWORK_PATH = File.join(USER_FRAMEWORK_DIR, "analysis-framework.md")
+
     def write_chunks_jsonl(chunks, output_dir)
       FileUtils.mkdir_p(output_dir)
 
@@ -248,15 +252,72 @@ module MusaKnowledgeBase
       db = DB.open(private_db_path)
       begin
         count = DB.remove_work_chunks(db, work_name)
+        analysis_count = DB.remove_analysis_chunks(db, work_name)
       ensure
         db.close
       end
 
-      if count == 0
+      if count == 0 && analysis_count == 0
         "Work '#{work_name}' not found in index."
       else
-        "Removed #{count} chunks for '#{work_name}'."
+        parts = []
+        parts << "#{count} work chunks" if count > 0
+        parts << "#{analysis_count} analysis chunks" if analysis_count > 0
+        "Removed #{parts.join(' and ')} for '#{work_name}'."
       end
+    end
+
+    def do_get_analysis_framework
+      if File.exist?(USER_FRAMEWORK_PATH)
+        { source: "user", content: File.read(USER_FRAMEWORK_PATH, encoding: "utf-8") }
+      else
+        { source: "default", content: File.read(DEFAULT_FRAMEWORK_PATH, encoding: "utf-8") }
+      end
+    end
+
+    def do_save_analysis_framework(content)
+      FileUtils.mkdir_p(USER_FRAMEWORK_DIR)
+      File.write(USER_FRAMEWORK_PATH, content, encoding: "utf-8")
+      "Analysis framework saved to #{USER_FRAMEWORK_PATH}"
+    end
+
+    def do_reset_analysis_framework
+      if File.exist?(USER_FRAMEWORK_PATH)
+        File.delete(USER_FRAMEWORK_PATH)
+        "Analysis framework reset to default."
+      else
+        "Analysis framework is already using the default."
+      end
+    end
+
+    def do_add_analysis(work_name, analysis_text, private_db_path)
+      require_relative "db"
+
+      chunks = Chunker.chunk_markdown_text(
+        analysis_text,
+        kind: "analysis",
+        source_label: "#{work_name}/analysis"
+      )
+
+      if chunks.empty?
+        return "No content to index from the analysis text."
+      end
+
+      FileUtils.mkdir_p(File.dirname(private_db_path))
+      db = DB.open(private_db_path)
+      begin
+        DB.create_schema(db)
+        # Remove any previous analysis for this work
+        removed = DB.remove_analysis_chunks(db, work_name)
+        DB.upsert_chunks(db, chunks, collection_override: "analysis")
+      ensure
+        db.close
+      end
+
+      lines = []
+      lines << "Removed #{removed} previous analysis chunks." if removed > 0
+      lines << "Indexed #{chunks.length} analysis chunks for '#{work_name}'."
+      lines.join("\n")
     end
 
     def do_status(chunks_dir, db_path, private_db_path)
@@ -334,6 +395,23 @@ module MusaKnowledgeBase
       chunks_dir = File.join(plugin_root, "data", "chunks")
       db_path = File.join(script_dir, "knowledge.db")
       do_status(chunks_dir, db_path, DB.default_private_db_path)
+    end
+
+    def get_analysis_framework
+      do_get_analysis_framework
+    end
+
+    def save_analysis_framework(content)
+      do_save_analysis_framework(content)
+    end
+
+    def reset_analysis_framework
+      do_reset_analysis_framework
+    end
+
+    def add_analysis(work_name, analysis_text)
+      require_relative "db"
+      do_add_analysis(work_name, analysis_text, DB.default_private_db_path)
     end
 
     def main

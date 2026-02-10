@@ -23,20 +23,22 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
 
    - **Semantic search** — An MCP server with a vector database (sqlite-vec + Voyage AI embeddings) that retrieves relevant documentation, API details, and code examples on demand. This is what makes answers accurate and sourced.
 
-   - **Works catalog** — Find similar compositions from the 23 demo projects and from the user's own indexed private works.
+   - **Works catalog** — Find similar compositions from the 23 demo projects, the user's own indexed private works, and their musical analyses.
 
 4. **Explain the dual-database architecture:**
 
    - **`knowledge.db`** (public) — Contains the official MusaDSL documentation, API reference, 23 demo projects, and supporting gem docs. Automatically downloaded from GitHub Releases and periodically updated. The user doesn't need to maintain it.
 
-   - **`private.db`** (local, optional) — A separate database for the user's own composition projects, stored at `~/.config/musa-claude-plugin/private.db`. This location persists across plugin updates — private content is always safe.
+   - **`private.db`** (local, optional) — A separate database for the user's own composition projects and their analyses, stored at `~/.config/musa-claude-plugin/private.db`. This location persists across plugin updates — private content is always safe.
 
-   - Use `/index` to add your compositions to the private database.
+   - Use `/index` to add your compositions to the private database, and `/analyze` to generate musical analyses.
 
 5. **List the available skills:**
 
    - `/explain` — Ask about any MusaDSL concept and get an accurate, sourced explanation. Examples: "explain series operations", "how does the sequencer work", "show me neumas syntax"
    - `/index` — Manage your private works index (add, update, remove, list compositions)
+   - `/analyze` — Generate a structured musical analysis of a composition, guided by an analysis framework with multiple analytical dimensions
+   - `/analysis_framework` — View, customize, or reset the analytical dimensions used by `/analyze`
    - `/setup` — Plugin configuration and troubleshooting (API key, knowledge base status)
    - `/hello` — This welcome and capabilities overview
 
@@ -44,16 +46,20 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
 
    | Tool | What it does |
    |------|-------------|
-   | `search` | Semantic search across all knowledge — docs, API, demos, and private works (kind: `"all"`, `"docs"`, `"api"`, `"demo_readme"`, `"demo_code"`, `"gem_readme"`, `"private_works"`) |
+   | `search` | Semantic search across all knowledge — docs, API, demos, private works, and analyses (kind: `"all"`, `"docs"`, `"api"`, `"demo_readme"`, `"demo_code"`, `"gem_readme"`, `"private_works"`, `"analysis"`) |
    | `api_reference` | Look up exact API reference by module and method name |
-   | `similar_works` | Find demo projects and private works similar to a description |
+   | `similar_works` | Find demo projects, private works, and related analyses similar to a description |
    | `dependencies` | What setup is needed for a concept (gems, objects, config) |
    | `pattern` | Get a working code pattern for a specific composition technique |
    | `check_setup` | Check the status of the plugin configuration |
    | `list_works` | List all indexed private works with chunk counts |
    | `add_work` | Index a private composition work from a given path |
-   | `remove_work` | Remove a private work from the index by name |
+   | `remove_work` | Remove a private work from the index by name (also removes associated analysis) |
    | `index_status` | Show status of both knowledge databases (public and private) |
+   | `get_analysis_framework` | Get the current analysis framework (default or user-customized) |
+   | `save_analysis_framework` | Save a customized analysis framework |
+   | `reset_analysis_framework` | Reset the analysis framework to default |
+   | `add_analysis` | Store a composition analysis in the knowledge base |
 
 ## Important
 

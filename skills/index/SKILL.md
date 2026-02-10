@@ -35,7 +35,7 @@ When the user provides a path to a composition project.
 
 Call the `add_work` MCP tool with the `work_path` parameter (absolute path to the composition project directory).
 
-After success, mention that the work now appears in `search` (kind: `"all"` or `"private_works"`) and `similar_works` results.
+After success, mention that the work now appears in `search` (kind: `"all"` or `"private_works"`) and `similar_works` results. Suggest using `/analyze` to generate a deeper musical analysis of the work.
 
 ### Update a work
 
@@ -50,7 +50,7 @@ The `work_name` is the basename of the composition directory (as shown by `list_
 
 When the user wants to remove a composition from the index. **Ask for confirmation before executing.**
 
-Call the `remove_work` MCP tool with the `work_name` parameter.
+Call the `remove_work` MCP tool with the `work_name` parameter. Note: this also removes any associated analysis chunks.
 
 ### Move or rename a work
 

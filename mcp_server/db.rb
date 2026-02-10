@@ -18,6 +18,7 @@ module MusaKnowledgeBase
   module DB
     COLLECTION_NAMES = %w[docs api demo_readme demo_code gem_readme].freeze
     PRIVATE_COLLECTION = "private_works"
+    ANALYSIS_COLLECTION = "analysis"
 
     module_function
 
@@ -165,7 +166,7 @@ module MusaKnowledgeBase
       # Join with chunks table for metadata and filter by kind
       all_results = []
       kinds_to_search = if kind == "all"
-                          COLLECTION_NAMES + [PRIVATE_COLLECTION]
+                          COLLECTION_NAMES + [PRIVATE_COLLECTION, ANALYSIS_COLLECTION]
                         else
                           [kind]
                         end
@@ -223,7 +224,7 @@ module MusaKnowledgeBase
 
     def collection_stats(db)
       stats = {}
-      (COLLECTION_NAMES + [PRIVATE_COLLECTION]).each do |kind|
+      (COLLECTION_NAMES + [PRIVATE_COLLECTION, ANALYSIS_COLLECTION]).each do |kind|
         row = db.execute("SELECT COUNT(*) AS cnt FROM chunks WHERE kind = ?", [kind]).first
         count = row["cnt"]
         stats[kind] = count if count > 0
@@ -272,6 +273,38 @@ module MusaKnowledgeBase
         # Delete chunk metadata
         db.execute(
           "DELETE FROM chunks WHERE kind = 'private_works' AND source LIKE ?",
+          [pattern]
+        )
+      end
+
+      count
+    end
+
+    # Remove all analysis chunks for a work (from both chunks and chunks_vec tables).
+    # Analysis chunks have kind='analysis' and source like "work_name/analysis".
+    # Returns the number of chunks deleted.
+    def remove_analysis_chunks(db, work_name)
+      pattern = "#{work_name}/%"
+
+      row = db.execute(
+        "SELECT COUNT(*) AS cnt FROM chunks WHERE kind = 'analysis' AND source LIKE ?",
+        [pattern]
+      ).first
+      count = row["cnt"]
+
+      return 0 if count == 0
+
+      db.transaction do
+        db.execute(<<~SQL, [pattern])
+          DELETE FROM chunks_vec
+          WHERE chunk_id IN (
+            SELECT id FROM chunks
+            WHERE kind = 'analysis' AND source LIKE ?
+          )
+        SQL
+
+        db.execute(
+          "DELETE FROM chunks WHERE kind = 'analysis' AND source LIKE ?",
           [pattern]
         )
       end

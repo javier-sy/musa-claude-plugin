@@ -8,8 +8,8 @@
     {
       "name": "musa-claude-plugin",
       "source": "./",
-      "description": "Deep MusaDSL knowledge for algorithmic composition via semantic search over documentation, API, and examples",
-      "version": "0.3.3"
+      "description": "Deep MusaDSL knowledge for algorithmic composition — semantic search over documentation, API, and examples, plus structured musical analysis of compositions",
+      "version": "0.4.0"
     }
   ]
 }

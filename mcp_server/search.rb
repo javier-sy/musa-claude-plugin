@@ -63,8 +63,9 @@ module MusaKnowledgeBase
 
         results = DB.knn_search(knowledge_db, embedding, kind: kind, n_results: 5)
 
-        if private_db && %w[all private_works].include?(kind)
-          private_results = DB.knn_search(private_db, embedding, kind: "private_works", n_results: 5)
+        if private_db && %w[all private_works analysis].include?(kind)
+          private_search_kind = (kind == "all") ? "all" : kind
+          private_results = DB.knn_search(private_db, embedding, kind: private_search_kind, n_results: 5)
           results = (results + private_results).sort_by { |r| r["distance"] }.first(5)
         end
 
@@ -94,14 +95,24 @@ module MusaKnowledgeBase
         results_readme = DB.knn_search(knowledge_db, embedding, kind: "demo_readme", n_results: 3)
         results_code = DB.knn_search(knowledge_db, embedding, kind: "demo_code", n_results: 3)
 
+        results_analysis = []
         if private_db
           private_results = DB.knn_search(private_db, embedding, kind: "private_works", n_results: 3)
           results_readme = (results_readme + private_results).sort_by { |r| r["distance"] }.first(3)
+
+          results_analysis = DB.knn_search(private_db, embedding, kind: "analysis", n_results: 3)
         end
 
         formatted_readme = DB.format_results(results_readme, description)
         formatted_code = DB.format_results(results_code, description)
-        "## Demo Descriptions\n#{formatted_readme}\n\n## Demo Code\n#{formatted_code}"
+        output = "## Demo Descriptions\n#{formatted_readme}\n\n## Demo Code\n#{formatted_code}"
+
+        unless results_analysis.empty?
+          formatted_analysis = DB.format_results(results_analysis, description)
+          output += "\n\n## Related Analyses\n#{formatted_analysis}"
+        end
+
+        output
       end
     end
 
