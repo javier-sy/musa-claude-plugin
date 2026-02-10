@@ -33,17 +33,21 @@ Help the user generate ideas for algorithmic compositions. Expand the creative s
 6. **Generate ideas across the framework dimensions** — present them as provocations and possibilities, not prescriptions:
    - For each relevant dimension, offer 2-3 concrete ideas
    - Frame them as questions: "What if...?", "What happens when...?", "Consider..."
-   - Connect abstract ideas to concrete MusaDSL implementations — what tools, what patterns, what code structure
    - Don't cover all dimensions mechanically — focus on the ones most relevant to the user's context
 
-7. **For each idea, sketch the technical mapping** — briefly indicate:
-   - Which MusaDSL tools would be involved (Markov, Series, Rules, etc.)
-   - What pattern or structure would be used
+7. **Verify BEFORE showing** — for every idea that references MusaDSL tools, classes, methods, or patterns:
+   - Call `search` and/or `api_reference` to confirm the classes, methods, and parameters actually exist
+   - Call `pattern` to retrieve working code patterns for the technique
+   - **Only after verification**, include the technical mapping in the idea
+   - If you cannot verify something, describe the idea conceptually (musical intention, aesthetic direction) WITHOUT code. Never show a code snippet that hasn't been checked against the knowledge base.
+
+8. **For each verified idea, sketch the technical mapping** — briefly indicate:
+   - Which MusaDSL tools would be involved (naming only verified classes and methods)
+   - What pattern or structure would be used (based on actual `pattern` results or knowledge base examples)
    - A rough sense of complexity (simple experiment vs. full composition)
+   - If you include a code fragment, it MUST come from or be closely based on verified knowledge base results — never invent method signatures, parameter names, or class hierarchies
 
-8. **Use WebSearch for external inspiration** — search for composers, techniques, movements, or concepts that connect to the ideas. Provide accurate context and citations.
-
-9. **Verify technical viability** — use `search` and `api_reference` to confirm that suggested approaches are actually possible in MusaDSL. Never suggest something that can't be implemented.
+9. **Use WebSearch for external inspiration** — search for composers, techniques, movements, or concepts that connect to the ideas. Provide accurate context and citations.
 
 10. **Present organized options** — let the user choose which direction interests them. Don't push a single direction.
 
@@ -68,10 +72,10 @@ When previous analyses are available, detect patterns: "Your last three pieces a
 
 ## Critical Guards
 
-- **Ideas must be grounded in MusaDSL** — never suggest something that can't be implemented with the available tools. Verify with `search`/`api_reference` when unsure.
+- **NEVER show unverified code** — this is the most important rule. Every code fragment, class name, method call, or parameter you mention MUST be verified against the knowledge base first (`search`, `api_reference`, `pattern`). If you cannot verify it, describe the idea in musical/conceptual terms only. The user must never experience the frustration of trying an idea that fails because a class, method, or parameter doesn't exist.
+- **Ideas can be wild; code must be correct** — be as provocative and creative as you want with musical concepts, aesthetic directions, and compositional strategies. But the moment you map an idea to MusaDSL code, that code must be accurate. When in doubt, leave the code to `/code` and describe the idea conceptually.
 - **Use WebSearch** for external references — composers, techniques, traditions. Don't rely on general knowledge alone.
 - **Never launch `/code` automatically** — thinking and coding are separate acts. Always leave a space for the user to reflect, choose, and refine before moving to implementation.
-- **Verify technical viability** — if you suggest using a specific tool or pattern, confirm it exists in MusaDSL.
 - **Source references**: MCP tool results include GitHub URLs. When you need to examine source code in detail, use `WebFetch` to read from GitHub URLs — do NOT attempt to read local MusaDSL source paths.
 
 ## When MCP tools return setup errors
