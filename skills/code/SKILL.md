@@ -50,12 +50,31 @@ Help the user program and modify algorithmic compositions using MusaDSL and Ruby
    - `musa/main.rb` — entry point with transport, clock, scale, voices, transcriptor setup
    - `musa/score.rb` — composition code with scheduled events
    - `musa/Gemfile` — dependencies
+   - `README.md` — project documentation (see below)
    - Follow the naming convention: `YYYY-MM-DD Project Name [musa bw]` (adjust tags)
 
-8. **Provide guidance on testing and common pitfalls**:
-   - How to run and test the piece
-   - Warn about common runtime issues
-   - Suggest `/index` to index the work and `/analyze` to generate a musical analysis when ready
+8. **Ensure the composition ends properly** if it is not meant to run indefinitely:
+   - The piece must have a clear termination point — e.g., after the last section finishes, stop the transport
+   - Use `control.after { transport.stop }` or similar after the final play/event chain
+   - If using event chaining (`on`/`launch`), the last section's `control.after` should trigger the stop
+   - If the piece is designed to loop or run until manually stopped, document this explicitly in the README
+   - **Never leave a finite composition without a termination mechanism** — the user should not have to Ctrl+C to end a piece that was supposed to finish
+
+9. **Generate a README.md** for the project that includes:
+   - Brief description of the piece and its musical intention
+   - **Audio generator connection** — a dedicated section documenting:
+     - Which DAW or synthesizer the piece targets (Bitwig, Ableton Live, SuperCollider, etc.)
+     - **MIDI channel mapping** — which channel is used for what role (e.g., channel 0 = melody, channel 1 = bass, channel 9 = percussion)
+     - **OSC mappings** if used — which addresses, what parameters
+     - **Program changes** or instrument assignments if relevant
+     - Any DAW-specific setup required (templates, controller scripts, MIDI routing)
+   - How to run the piece
+   - Any special requirements or notes
+
+10. **Provide guidance on testing and common pitfalls**:
+    - How to run and test the piece
+    - Warn about common runtime issues
+    - Suggest `/index` to index the work and `/analyze` to generate a musical analysis when ready
 
 ## Musical-to-Technical Translation
 
@@ -77,11 +96,13 @@ When the user describes their intention musically, translate it:
 ## Critical Guards
 
 - **NEVER invent API methods** — if you can't find a method in the knowledge base, say so. Use `api_reference` to verify.
+- **Ruby block syntax** — MusaDSL methods like `at`, `every`, `wait`, `play` take blocks. The syntax is `at(1) { ... }` or `at 1 do ... end`. **NEVER** write `at 1 { ... }` — this is a Ruby syntax error because curly-brace blocks bind to the last argument, not the method. When using parentheses-free syntax, always use `do...end`. When using curly braces, always use parentheses: `at(1) { ... }`.
 - **Series are lazy iterators** — they use `.next_value` for manual iteration, NOT `.each`. For playback, use `play serie, decoder: decoder, mode: :neumalang`.
 - **Neuma durations are multiples of base_duration** — `1` = one base_duration, `2` = two base_durations. They are NOT fractions like `/4`.
 - **Refinements are file-scoped** — `using Musa::Extension::Neumas` must be declared in EACH file that uses `.to_neumas`.
 - **Ornaments require a Transcriptor** — without one, ornaments (`tr`, `mor`, `st`, `turn`) are silently ignored.
 - **Use Rational for timing** — `1/4r`, `1r`, `3/4r`. Never use Float for timing values.
+- **Compositions must end** — if the piece is finite, ensure the transport stops after the last event. Never leave a finite piece without a termination mechanism.
 - **Source references**: MCP tool results include GitHub URLs pointing to exact versioned source files. When you need to examine source code in detail, use `WebFetch` to read it from the GitHub URL — do NOT attempt to read local MusaDSL source paths (the user may not have them cloned).
 - **Respect existing project conventions** — if modifying an existing piece, follow its style and patterns.
 
