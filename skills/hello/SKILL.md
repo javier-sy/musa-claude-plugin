@@ -33,7 +33,23 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
 
    - Use `/index` to add your compositions to the private database, and `/analyze` to generate musical analyses.
 
-5. **List the available skills:**
+5. **Explain the composition analysis capability:**
+
+   The plugin can generate structured musical analyses of compositions. `/analyze` reads the actual source code, interprets it musically, and produces a detailed analysis covering multiple analytical dimensions. The analysis is then stored as searchable knowledge in `private.db`, enriching future searches.
+
+   The analysis is guided by a configurable **analysis framework** with 8 default dimensions:
+   - Formal Structure — sections, chaining, form, proportions
+   - Harmonic and Modal Language — scales, modes, modulations
+   - Rhythmic and Temporal Strategy — durations, polyrhythms, clock/transport
+   - Generative Strategy — Markov, Variatio, Rules, Darwin, series operations
+   - Texture and Instrumentation — voices, MIDI channels, density, dynamics
+   - Idiomatic Usage and Special Features — creative uses of MusaDSL
+   - Relation to Other Artists — connections to composers and traditions (with WebSearch)
+   - Notable Technical Patterns — reusable idioms and representative fragments
+
+   The user can customize these dimensions with `/analysis_framework` — adding, removing, or modifying dimensions to fit their analytical interests.
+
+6. **List the available skills:**
 
    - `/explain` — Ask about any MusaDSL concept and get an accurate, sourced explanation. Examples: "explain series operations", "how does the sequencer work", "show me neumas syntax"
    - `/index` — Manage your private works index (add, update, remove, list compositions)
@@ -42,7 +58,7 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
    - `/setup` — Plugin configuration and troubleshooting (API key, knowledge base status)
    - `/hello` — This welcome and capabilities overview
 
-6. **List the available MCP tools** (used automatically when answering questions):
+7. **List the available MCP tools** (used automatically when answering questions):
 
    | Tool | What it does |
    |------|-------------|
