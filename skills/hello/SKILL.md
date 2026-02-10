@@ -33,11 +33,40 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
 
    - Use `/index` to add your compositions to the private database, and `/analyze` to generate musical analyses.
 
-5. **Explain the composition analysis capability:**
+5. **Explain the creative thinking capability** (`/think`):
 
-   The plugin can generate structured musical analyses of compositions. `/analyze` reads the actual source code, interprets it musically, and produces a detailed analysis covering multiple analytical dimensions. The analysis is then stored as searchable knowledge in `private.db`, enriching future searches.
+   Helps generate ideas for new compositions or explore new directions for existing ones. It draws from multiple sources:
+   - The **inspiration framework** — a configurable set of creative dimensions (see below)
+   - The user's **previous analyses** from `private.db` — to detect patterns in their practice and suggest unexplored directions
+   - **MusaDSL knowledge** from `knowledge.db` — to ensure every idea maps to concrete, implementable tools and patterns
+   - **WebSearch** — to connect ideas to composers, techniques, and traditions with accurate references
 
-   The analysis is guided by a configurable **analysis framework** with 9 default dimensions:
+   The default **inspiration framework** has 8 creative dimensions:
+   - Structure — horizontal/vertical organization, proportion, emergence vs. design
+   - Time — pulse, polyrhythm, tempo, duration vocabulary, silence
+   - Pitch — scales, intervals, register, microtonality, pitch series, clusters
+   - Algorithm — Markov, L-systems, genetic algorithms, feedback, control vs. chance
+   - Texture — density, layering, roles, dynamics, timbral evolution
+   - Reference — musical traditions, composers, extra-musical ideas, live coding culture
+   - Dialogue — contrast with similar and opposite composers based on the conversation context (with WebSearch)
+   - Constraint — creative limitation as catalyst (pitch, duration, resource, tool restrictions)
+
+   The user can customize these dimensions with `/inspiration_framework`.
+
+6. **Explain the composition coding capability** (`/code`):
+
+   Translates musical intentions into working MusaDSL Ruby code. It can create new compositions from scratch (generating a complete project structure) or modify existing ones (adding voices, sections, fixing bugs, refactoring). It draws from:
+   - **MusaDSL knowledge** from `knowledge.db` — API reference, documentation, patterns, and demo examples to verify every method call
+   - **Similar works** from both databases — to find relevant patterns and approaches
+   - The user's **existing code** — reading from the filesystem to understand and extend it
+
+   The user describes their musical intention ("more intense", "like a canon", "more chaotic") and `/code` translates it into concrete technical approaches, always proposing the approach before writing.
+
+7. **Explain the composition analysis capability** (`/analyze`):
+
+   Reads the actual source code of a composition, interprets it musically, and produces a detailed structured analysis. The analysis is stored as searchable knowledge in `private.db`, enriching future searches, `/think` ideation, and `/code` references.
+
+   The default **analysis framework** has 9 dimensions:
    - Formal Structure — sections, chaining, form, proportions
    - Harmonic and Modal Language — scales, modes, modulations
    - Rhythmic and Temporal Strategy — durations, polyrhythms, clock/transport
@@ -48,25 +77,31 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
    - Notable Technical Patterns — reusable idioms and representative fragments
    - Conclusion — key aspects recapitulation, aesthetic reading, closing statement
 
-   The user can customize these dimensions with `/analysis_framework` — adding, removing, or modifying dimensions to fit their analytical interests.
+   The user can customize these dimensions with `/analysis_framework`.
 
-6. **Explain the creative thinking capability:**
+8. **Explain the complete creative cycle** and how the databases connect everything:
 
-   `/think` helps generate ideas for new compositions or explore new directions for existing ones. It uses a configurable **inspiration framework** with 8 default creative dimensions:
-   - Structure — horizontal/vertical organization, proportion, emergence vs. design
-   - Time — pulse, polyrhythm, tempo, duration vocabulary, silence
-   - Pitch — scales, intervals, register, microtonality, pitch series, clusters
-   - Algorithm — Markov, L-systems, genetic algorithms, feedback, control vs. chance
-   - Texture — density, layering, roles, dynamics, timbral evolution
-   - Reference — musical traditions, composers, extra-musical ideas, live coding culture
-   - Dialogue — contrast with similar and opposite composers to generate new directions (with WebSearch)
-   - Constraint — creative limitation as catalyst (pitch, duration, resource, tool restrictions)
+   The plugin supports a continuous creative cycle where each step feeds into the next, connected by the two databases:
 
-   Ideas are always grounded in MusaDSL — each suggestion maps to concrete tools and patterns. The inspiration framework is customizable with `/inspiration_framework`.
+   ```
+   /think ──→ /code ──→ /index ──→ /analyze ──╮
+     ↑                                          │
+     ╰──────────────────────────────────────────╯
+   ```
 
-   The complete creative cycle: `/think` (generate ideas) -> `/code` (implement) -> `/index` (index the work) -> `/analyze` (analyze it) -> `/think` (new ideas from the analysis).
+   - **`/think`** (ideation) — generates ideas drawing from the inspiration framework, MusaDSL knowledge (`knowledge.db`), and the user's previous analyses and works (`private.db`). The more the user has composed and analyzed, the richer the ideation becomes.
+   - **`/code`** (composition) — implements ideas as working MusaDSL code, verified against `knowledge.db` (API, docs, patterns, demos) and informed by similar works from both databases.
+   - **`/index`** (knowledge building) — stores the composition's code in `private.db`, making it searchable and available for future reference by all other skills.
+   - **`/analyze`** (reflection) — reads the code, interprets it musically using the analysis framework, and stores the analysis in `private.db`. This transforms "what does the code say" into "what does the code do musically."
+   - Back to **`/think`** — the new analysis enriches future ideation: patterns detected across works, unexplored directions, dialogue with composers.
 
-7. **List the available skills:**
+   The two databases are the memory of this cycle:
+   - **`knowledge.db`** holds MusaDSL knowledge (what is possible)
+   - **`private.db`** holds the user's creative practice (what has been done, and what it means)
+
+   The cycle is not mandatory — the user can enter at any point and use any skill independently. But each step enriches the others.
+
+9. **List the available skills:**
 
    - `/explain` — Ask about any MusaDSL concept and get an accurate, sourced explanation. Examples: "explain series operations", "how does the sequencer work", "show me neumas syntax"
    - `/code` — Program or modify MusaDSL compositions. Translates musical intentions into working code with API-verified accuracy
@@ -78,7 +113,7 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
    - `/setup` — Plugin configuration and troubleshooting (API key, knowledge base status)
    - `/hello` — This welcome and capabilities overview
 
-8. **List the available MCP tools** (used automatically when answering questions):
+10. **List the available MCP tools** (used automatically when answering questions):
 
    | Tool | What it does |
    |------|-------------|
