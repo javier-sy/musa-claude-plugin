@@ -6,7 +6,7 @@
       "env": {
         "VOYAGE_API_KEY": "${VOYAGE_API_KEY}",
         "KNOWLEDGE_DB_PATH": "${CLAUDE_PLUGIN_ROOT}/mcp_server/knowledge.db",
-        "PRIVATE_DB_PATH": "${HOME}/.config/musa-claude-plugin/private.db",
+        "PRIVATE_DB_PATH": "${HOME}/.config/nota/private.db",
         "BUNDLE_GEMFILE": "${CLAUDE_PLUGIN_ROOT}/Gemfile"
       },
       "cwd": "${CLAUDE_PLUGIN_ROOT}"

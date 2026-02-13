@@ -6,10 +6,10 @@
   },
   "plugins": [
     {
-      "name": "musa-claude-plugin",
+      "name": "nota",
       "source": "./",
-      "description": "Deep MusaDSL knowledge for algorithmic composition — semantic search, composition coding, creative ideation, and structured musical analysis",
-      "version": "0.6.0"
+      "description": "Nota — MusaDSL composition assistant: learn the framework, code compositions, explore ideas, analyze music",
+      "version": "0.7.0"
     }
   ]
 }

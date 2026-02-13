@@ -31,7 +31,7 @@ class SearchTool < MCP::Tool
 
   class << self
     def call(query:, kind: "all", server_context:)
-      result = MusaKnowledgeBase::Search.semantic_search(query, kind)
+      result = NotaKnowledgeBase::Search.semantic_search(query, kind)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -60,7 +60,7 @@ class ApiReferenceTool < MCP::Tool
 
   class << self
     def call(module_name:, method: "", server_context:)
-      result = MusaKnowledgeBase::Search.api_lookup(module_name, method)
+      result = NotaKnowledgeBase::Search.api_lookup(module_name, method)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -84,7 +84,7 @@ class SimilarWorksTool < MCP::Tool
 
   class << self
     def call(description:, server_context:)
-      result = MusaKnowledgeBase::Search.similar_works(description)
+      result = NotaKnowledgeBase::Search.similar_works(description)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -108,7 +108,7 @@ class DependenciesTool < MCP::Tool
 
   class << self
     def call(concept:, server_context:)
-      result = MusaKnowledgeBase::Search.dependency_chain(concept)
+      result = NotaKnowledgeBase::Search.dependency_chain(concept)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -132,7 +132,7 @@ class PatternTool < MCP::Tool
 
   class << self
     def call(technique:, server_context:)
-      result = MusaKnowledgeBase::Search.code_pattern(technique)
+      result = NotaKnowledgeBase::Search.code_pattern(technique)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -160,7 +160,7 @@ class CheckSetupTool < MCP::Tool
       else
         # Test the key with a minimal embedding call
         begin
-          client = MusaKnowledgeBase::Voyage::Client.new(input_type: "query")
+          client = NotaKnowledgeBase::Voyage::Client.new(input_type: "query")
           client.embed(["test"])
           status << "- **Voyage API key**: valid"
         rescue => e
@@ -170,14 +170,14 @@ class CheckSetupTool < MCP::Tool
       end
 
       # Check knowledge DB
-      db_path = MusaKnowledgeBase::Search.db_path
+      db_path = NotaKnowledgeBase::Search.db_path
       has_db = File.exist?(db_path)
       status << "- **Knowledge base**: #{has_db ? 'present' : 'NOT FOUND'}"
 
       if has_db
         begin
-          db = MusaKnowledgeBase::DB.open
-          stats = MusaKnowledgeBase::DB.collection_stats(db)
+          db = NotaKnowledgeBase::DB.open
+          stats = NotaKnowledgeBase::DB.collection_stats(db)
           db.close
           status << "- **Collections**:"
           stats.each { |name, count| status << "  - #{name}: #{count} chunks" }
@@ -187,14 +187,14 @@ class CheckSetupTool < MCP::Tool
       end
 
       # Check private DB
-      private_db_path = MusaKnowledgeBase::DB.default_private_db_path
+      private_db_path = NotaKnowledgeBase::DB.default_private_db_path
       has_private_db = File.exist?(private_db_path)
       status << "- **Private works DB**: #{has_private_db ? 'present' : 'not present — use /index to manage your private works'}"
 
       if has_private_db
         begin
-          private_db = MusaKnowledgeBase::DB.open(private_db_path)
-          private_stats = MusaKnowledgeBase::DB.collection_stats(private_db)
+          private_db = NotaKnowledgeBase::DB.open(private_db_path)
+          private_stats = NotaKnowledgeBase::DB.collection_stats(private_db)
           private_db.close
           private_stats.each { |name, count| status << "  - #{name}: #{count} chunks" }
         rescue => e
@@ -213,7 +213,7 @@ class ListWorksTool < MCP::Tool
   class << self
     def call(server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.list_works
+      result = NotaKnowledgeBase::Indexer.list_works
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -238,7 +238,7 @@ class AddWorkTool < MCP::Tool
   class << self
     def call(work_path:, server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.add_work(work_path)
+      result = NotaKnowledgeBase::Indexer.add_work(work_path)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -260,7 +260,7 @@ class RemoveWorkTool < MCP::Tool
   class << self
     def call(work_name:, server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.remove_work(work_name)
+      result = NotaKnowledgeBase::Indexer.remove_work(work_name)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -274,7 +274,7 @@ class IndexStatusTool < MCP::Tool
   class << self
     def call(server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.index_status
+      result = NotaKnowledgeBase::Indexer.index_status
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -289,7 +289,7 @@ class GetAnalysisFrameworkTool < MCP::Tool
   class << self
     def call(server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.get_analysis_framework
+      result = NotaKnowledgeBase::Indexer.get_analysis_framework
       text = "**Source**: #{result[:source]}\n\n#{result[:content]}"
       MCP::Tool::Response.new([{ type: "text", text: text }])
     end
@@ -315,7 +315,7 @@ class SaveAnalysisFrameworkTool < MCP::Tool
   class << self
     def call(content:, server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.save_analysis_framework(content)
+      result = NotaKnowledgeBase::Indexer.save_analysis_framework(content)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -330,7 +330,7 @@ class ResetAnalysisFrameworkTool < MCP::Tool
   class << self
     def call(server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.reset_analysis_framework
+      result = NotaKnowledgeBase::Indexer.reset_analysis_framework
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -345,7 +345,7 @@ class GetInspirationFrameworkTool < MCP::Tool
   class << self
     def call(server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.get_inspiration_framework
+      result = NotaKnowledgeBase::Indexer.get_inspiration_framework
       text = "**Source**: #{result[:source]}\n\n#{result[:content]}"
       MCP::Tool::Response.new([{ type: "text", text: text }])
     end
@@ -371,7 +371,7 @@ class SaveInspirationFrameworkTool < MCP::Tool
   class << self
     def call(content:, server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.save_inspiration_framework(content)
+      result = NotaKnowledgeBase::Indexer.save_inspiration_framework(content)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -386,7 +386,7 @@ class ResetInspirationFrameworkTool < MCP::Tool
   class << self
     def call(server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.reset_inspiration_framework
+      result = NotaKnowledgeBase::Indexer.reset_inspiration_framework
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
@@ -415,13 +415,13 @@ class AddAnalysisTool < MCP::Tool
   class << self
     def call(work_name:, analysis_text:, server_context:)
       require_relative "indexer"
-      result = MusaKnowledgeBase::Indexer.add_analysis(work_name, analysis_text)
+      result = NotaKnowledgeBase::Indexer.add_analysis(work_name, analysis_text)
       MCP::Tool::Response.new([{ type: "text", text: result }])
     end
   end
 end
 
-module MusaKnowledgeBase
+module NotaKnowledgeBase
   def self.run_server
     # Ensure knowledge.db exists before accepting tool calls.
     # Covers: first install, plugin update (new cache dir), hook failure.
@@ -454,4 +454,4 @@ module MusaKnowledgeBase
   end
 end
 
-MusaKnowledgeBase.run_server if __FILE__ == $PROGRAM_NAME
+NotaKnowledgeBase.run_server if __FILE__ == $PROGRAM_NAME

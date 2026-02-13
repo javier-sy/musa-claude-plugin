@@ -1,10 +1,10 @@
-# musa-claude-plugin
+# Nota — plugin for Claude Code
 
-Deep MusaDSL knowledge for Claude Code — semantic search, composition coding, creative ideation, and structured musical analysis for algorithmic composition.
+MusaDSL composition assistant: learn the framework, code compositions, explore ideas, analyze music.
 
 ## What it does
 
-This plugin transforms Claude Code into an algorithmic composition assistant with deep knowledge of the [MusaDSL](https://musadsl.yeste.studio) framework. It provides 9 interactive skills that cover the entire creative process — from understanding the framework, through brainstorming ideas, to writing verified code and analyzing the results.
+Nota transforms Claude Code into an algorithmic composition assistant with deep knowledge of the [MusaDSL](https://musadsl.yeste.studio) framework. It provides 9 interactive skills that cover the entire creative process — from understanding the framework, through brainstorming ideas, to writing verified code and analyzing the results.
 
 Everything is backed by a knowledge base with MusaDSL documentation, API reference, 23 demo projects, and (optionally) your own compositions and their musical analyses.
 
@@ -22,8 +22,8 @@ Say **"hello musa"** to get a welcome and capabilities overview.
 Inside Claude Code, run:
 
 ```
-/plugin marketplace add javier-sy/musa-claude-plugin
-/plugin install musa-claude-plugin@yeste.studio
+/plugin marketplace add javier-sy/nota-plugin-for-claude
+/plugin install nota@yeste.studio
 ```
 
 Then add the API key to your shell profile:
@@ -122,7 +122,7 @@ Two separate databases:
 
 - **`knowledge.db`** (public) — Documentation, API reference, demo code, and gem READMEs. Pre-built, automatically downloaded from GitHub Releases on session start. The CI workflow rebuilds it when source repos update.
 
-- **`private.db`** (local, per-user) — User's indexed compositions and musical analyses. Stored at `~/.config/musa-claude-plugin/private.db`, outside the plugin directory, persisting across updates. Never touched by CI or auto-updates.
+- **`private.db`** (local, per-user) — User's indexed compositions and musical analyses. Stored at `~/.config/nota/private.db`, outside the plugin directory, persisting across updates. Never touched by CI or auto-updates.
 
 When searching, the MCP server queries both databases and merges results by cosine distance. If `private.db` doesn't exist, searches use only the public knowledge base.
 
@@ -150,7 +150,7 @@ When searching, the MCP server queries both databases and merges results by cosi
 
 ### Building the public knowledge base
 
-Prerequisites: all MusaDSL source repositories cloned as siblings of `musa-claude-plugin/`, and `VOYAGE_API_KEY` with sufficient quota for embedding ~3000 chunks.
+Prerequisites: all MusaDSL source repositories cloned as siblings of `nota/`, and `VOYAGE_API_KEY` with sufficient quota for embedding ~3000 chunks.
 
 ```bash
 make chunks    # Generate chunks only (no API key needed, useful for inspection)
@@ -172,7 +172,7 @@ The CI only rebuilds `knowledge.db` — it never touches `private.db`.
 ### Project Structure
 
 ```
-musa-claude-plugin/
+nota/
 ├── .claude-plugin/          # Plugin metadata (plugin.json, marketplace.json)
 ├── skills/
 │   ├── hello/               # /hello skill — welcome and capabilities overview

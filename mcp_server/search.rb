@@ -7,7 +7,7 @@
 
 require_relative "db"
 
-module MusaKnowledgeBase
+module NotaKnowledgeBase
   module Search
     SETUP_HINT =
       "The plugin is not fully configured. " \

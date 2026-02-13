@@ -17,11 +17,11 @@ require "pathname"
 
 require_relative "chunker"
 
-module MusaKnowledgeBase
+module NotaKnowledgeBase
   module Indexer
     module_function
 
-    USER_FRAMEWORK_DIR = File.join(Dir.home, ".config", "musa-claude-plugin")
+    USER_FRAMEWORK_DIR = File.join(Dir.home, ".config", "nota")
     DEFAULT_FRAMEWORK_PATH = File.join(File.dirname(__dir__), "defaults", "analysis-framework.md")
     USER_FRAMEWORK_PATH = File.join(USER_FRAMEWORK_DIR, "analysis-framework.md")
 
@@ -508,4 +508,4 @@ module MusaKnowledgeBase
   end
 end
 
-MusaKnowledgeBase::Indexer.main if __FILE__ == $PROGRAM_NAME
+NotaKnowledgeBase::Indexer.main if __FILE__ == $PROGRAM_NAME

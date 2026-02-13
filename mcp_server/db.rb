@@ -14,7 +14,7 @@ require "sqlite_vec"
 
 require_relative "embeddings"
 
-module MusaKnowledgeBase
+module NotaKnowledgeBase
   module DB
     COLLECTION_NAMES = %w[docs api demo_readme demo_code gem_readme].freeze
     PRIVATE_COLLECTION = "private_works"
@@ -29,7 +29,7 @@ module MusaKnowledgeBase
       File.join(__dir__, "knowledge.db")
     end
 
-    STABLE_PRIVATE_DB_DIR = File.join(Dir.home, ".config", "musa-claude-plugin")
+    STABLE_PRIVATE_DB_DIR = File.join(Dir.home, ".config", "nota")
 
     def default_private_db_path
       env_path = ENV["PRIVATE_DB_PATH"]

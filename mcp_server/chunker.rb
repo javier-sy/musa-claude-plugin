@@ -9,7 +9,7 @@ require "digest/sha2"
 require "json"
 require "ripper"
 
-module MusaKnowledgeBase
+module NotaKnowledgeBase
   module Chunker
     Chunk = Struct.new(:id, :content, :metadata) do
       def to_h

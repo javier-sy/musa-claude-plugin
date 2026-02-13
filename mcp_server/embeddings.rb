@@ -10,7 +10,7 @@ require "net/http"
 require "json"
 require "uri"
 
-module MusaKnowledgeBase
+module NotaKnowledgeBase
   module Voyage
     API_URL    = URI("https://api.voyageai.com/v1/embeddings")
     MODEL      = "voyage-code-3"

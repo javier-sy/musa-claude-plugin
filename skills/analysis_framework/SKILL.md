@@ -54,6 +54,6 @@ When the user wants to go back to the default framework.
 
 - The framework is a markdown file with `##` sections. Each section title names an analytical dimension; the section body provides instructions for what to analyze.
 - The default framework has 9 dimensions: Formal Structure, Harmonic and Modal Language, Rhythmic and Temporal Strategy, Generative Strategy, Texture and Instrumentation, Idiomatic Usage and Special Features, Relation to Other Artists, Notable Technical Patterns, Conclusion.
-- User customizations are stored at `~/.config/musa-claude-plugin/analysis-framework.md`.
+- User customizations are stored at `~/.config/nota/analysis-framework.md`.
 - Changes to the framework affect future `/analyze` runs but do not retroactively change existing analyses.
 - **Do NOT call `get_analysis_framework` for informational purposes** — only call it when the user is actively working with the framework (viewing, modifying, or resetting).
