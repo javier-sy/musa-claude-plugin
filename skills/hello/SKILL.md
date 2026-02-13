@@ -44,7 +44,7 @@ Present a warm welcome and a comprehensive overview of what the plugin provides.
 
    **`/index`** — Works indexing. Indexes the user's composition projects so Claude can reference them. Once indexed, works appear in search results and inform all other skills. Use `/index` to add, update, remove, and list compositions.
 
-   **`/analyze`** — Musical analysis. Reads the code, interprets it musically, and produces a detailed structured analysis across 9 configurable dimensions: Formal Structure, Harmonic and Modal Language, Rhythmic and Temporal Strategy, Generative Strategy, Texture and Instrumentation, Idiomatic Usage and Special Features, Relation to Other Artists, Notable Technical Patterns, and Conclusion. The analysis is stored as searchable knowledge that enriches future `/think` ideation and `/code` references.
+   **`/analyze`** — Musical analysis. Reads the code, interprets it musically, and produces a detailed structured analysis across 10 configurable dimensions: Formal Structure, Harmonic and Modal Language, Rhythmic and Temporal Strategy, Generative Strategy, Texture and Instrumentation, Idiomatic Usage and Special Features, Relation to Other Artists, Notable Technical Patterns, Coding Best Practices, and Conclusion. The analysis is stored as searchable knowledge that enriches future `/think` ideation and `/code` references.
 
    Customize the dimensions with `/analysis_framework`.
 

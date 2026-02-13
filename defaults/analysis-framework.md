@@ -80,6 +80,18 @@ Extract reusable patterns and representative fragments:
 - Note effective patterns for section chaining, voice management, or generative control
 - Include short representative code fragments (with brief explanation) that capture the essence of the piece's technique
 
+## Coding Best Practices
+
+Extract reusable best practices at the project and code organization level:
+
+- **Project structure** — How is the code organized across files? Is there a clear separation between setup (transport, voices, scale) and composition logic (score, sections)? What organizational decisions make the project easier to understand, modify, or extend?
+- **Abstraction choices** — Where does the code create useful abstractions (helper methods, reusable series, parameterized patterns) vs. where does it keep things inline and direct? What is the right level of abstraction for this piece, and why?
+- **Parameterization** — Which musical decisions are expressed as parameters (scale, tempo, density, probabilities) that can be tweaked without restructuring? What would a newcomer need to change to create a variation?
+- **Readability** — How well does the code communicate its musical intent? Are variable names, structure, and flow readable as a "score"? What naming or structural conventions make the code self-documenting?
+- **Modularity and reuse** — Are there self-contained patterns (a voice setup, a generative engine, a section-chaining strategy) that could be lifted into another project with minimal adaptation? Express them as transferable recipes.
+- **Error resilience** — How does the code handle edge cases — empty series, MIDI connection issues, timing drift? Are there defensive patterns worth adopting?
+- **Lessons learned** — What worked particularly well that should become standard practice? What was awkward or fragile and should be done differently next time?
+
 ## Conclusion
 
 Synthesize the analysis into a cohesive closing:

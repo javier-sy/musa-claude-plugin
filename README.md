@@ -71,7 +71,7 @@ Use `/index` to add, update, remove, and list indexed compositions.
 
 Reads your code, interprets it musically, and produces a detailed structured analysis. The analysis is stored as searchable knowledge, enriching future searches, `/think` ideation, and `/code` references. This transforms search from "what does the code say" to "what does the code do musically."
 
-The default **analysis framework** has 9 dimensions: Formal Structure, Harmonic and Modal Language, Rhythmic and Temporal Strategy, Generative Strategy, Texture and Instrumentation, Idiomatic Usage and Special Features, Relation to Other Artists, Notable Technical Patterns, and Conclusion. Customize them with `/analysis_framework`.
+The default **analysis framework** has 10 dimensions: Formal Structure, Harmonic and Modal Language, Rhythmic and Temporal Strategy, Generative Strategy, Texture and Instrumentation, Idiomatic Usage and Special Features, Relation to Other Artists, Notable Technical Patterns, Coding Best Practices, and Conclusion. Customize them with `/analysis_framework`.
 
 Removing a work with `/index` also removes its associated analysis.
 
@@ -185,7 +185,7 @@ nota/
 │   ├── inspiration_framework/ # /inspiration_framework skill — manage inspiration dimensions
 │   └── setup/               # /setup skill — configuration and troubleshooting
 ├── defaults/                # Default configuration files
-│   ├── analysis-framework.md      # Default analysis framework (9 dimensions)
+│   ├── analysis-framework.md      # Default analysis framework (10 dimensions)
 │   └── inspiration-framework.md   # Default inspiration framework (9 dimensions)
 ├── rules/                   # Static reference (always in context)
 ├── mcp_server/              # Ruby MCP server + sqlite-vec
