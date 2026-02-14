@@ -33,16 +33,6 @@ Analyze time organization:
 - What clock/transport setup is used (TimerClock, InputMidiClock, ExternalTickClock)?
 - Note tempo choices and any tempo changes
 
-## Generative Strategy
-
-Analyze how material is generated algorithmically:
-
-- Which generative tools are used (Markov, Variatio, Rules/L-systems, Darwin/genetic, GenerativeGrammar)?
-- How are Series used — which constructors (S, FOR, FIBO, H, etc.) and which operations (map, select, merge, etc.)?
-- What is the balance between deterministic and indeterminate elements?
-- Are there feedback loops or self-modifying structures?
-- How are random/stochastic elements controlled (seeds, ranges, weighted choices)?
-
 ## Texture and Instrumentation
 
 Analyze the sonic surface:
@@ -53,6 +43,16 @@ Analyze the sonic surface:
 - How are velocity dynamics used (ppp through fff)?
 - Note any MIDI-specific techniques (program changes, CC, aftertouch)
 
+## Generative Strategy
+
+Analyze how material is generated algorithmically:
+
+- Which generative tools are used (Markov, Variatio, Rules/L-systems, Darwin/genetic, GenerativeGrammar)?
+- How are Series used — which constructors (S, FOR, FIBO, H, etc.) and which operations (map, select, merge, etc.)?
+- What is the balance between deterministic and indeterminate elements?
+- Are there feedback loops or self-modifying structures?
+- How are random/stochastic elements controlled (seeds, ranges, weighted choices)?
+
 ## Idiomatic Usage and Special Features
 
 Analyze how the composition uses MusaDSL's unique capabilities:
@@ -61,15 +61,6 @@ Analyze how the composition uses MusaDSL's unique capabilities:
 - Are there unusual or creative uses of the framework?
 - How does the code architecture reflect the musical architecture?
 - Note any custom extensions, refinements, or workarounds
-
-## Relation to Other Artists
-
-Identify connections to other composers, traditions, or aesthetic movements:
-
-- What musical traditions or styles does this piece relate to (minimalism, spectralism, serialism, aleatoric, generative, etc.)?
-- Are there specific composers whose techniques or aesthetics are echoed?
-- **Use WebSearch to complement your knowledge**: search for relevant composers, techniques, or movements to provide accurate context and citations
-- Note connections to electronic music, live coding culture, or algorithmic art communities
 
 ## Notable Technical Patterns
 
@@ -91,6 +82,15 @@ Extract reusable best practices at the project and code organization level:
 - **Modularity and reuse** — Are there self-contained patterns (a voice setup, a generative engine, a section-chaining strategy) that could be lifted into another project with minimal adaptation? Express them as transferable recipes.
 - **Error resilience** — How does the code handle edge cases — empty series, MIDI connection issues, timing drift? Are there defensive patterns worth adopting?
 - **Lessons learned** — What worked particularly well that should become standard practice? What was awkward or fragile and should be done differently next time?
+
+## Relation to Other Artists
+
+Identify connections to other composers, traditions, or aesthetic movements:
+
+- What musical traditions or styles does this piece relate to (minimalism, spectralism, serialism, aleatoric, generative, etc.)?
+- Are there specific composers whose techniques or aesthetics are echoed?
+- **Use WebSearch to complement your knowledge**: search for relevant composers, techniques, or movements to provide accurate context and citations
+- Note connections to electronic music, live coding culture, or algorithmic art communities
 
 ## Conclusion
 
